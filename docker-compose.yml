@@ -9,20 +9,44 @@ services:
       - "80:80"
     networks:
       - book-library
-  postgres:
+  postgres-master:
     image: postgres:14.2
-    container_name: book-library-postgres
+    container_name: book-library-postgres-master
     env_file: configs/.env.local
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-#    volumes:
-#      - ./postgres-data:/var/lib/postgresql/data
+    volumes:
+      - ./postgres-data/master:/var/lib/postgresql/data
+      - ./configs/potsgres/master_postgres.conf:/etc/postgresql/postgresql.conf
+      - ./configs/potsgres/master_pg_hba.conf:/etc/postgresql/pg_hba.conf
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - book-library
+#  https://youtube.com/watch?v=8aZXK_5Ras4
+  #  postgres-slave:
+#    image: postgres:14.2
+#    container_name: book-library-postgres-slave
+#    env_file: configs/.env.local
+#    environment:
+#      POSTGRES_DB: ${DB_NAME}
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#      POSTGRES_PORT: "5433"
+#    volumes:
+#      - ./postgres-data/slave:/var/lib/postgresql/data
+#    ports:
+#      - "5433:5433"
+#    networks:
+#      - book-library
   prometheus:
     image: prom/prometheus
     container_name: book-library-prometheus
