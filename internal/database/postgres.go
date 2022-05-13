@@ -2,31 +2,35 @@ package database
 
 import (
 	"cheeeasy2501/book-library/internal/config"
-	"database/sql"
-	_ "database/sql/driver"
+	"github.com/tsenart/nap"
 	"time"
 )
 
 var Instance *Database
 
 type Database struct {
-	Conn *sql.DB
+	Conn *nap.DB
 }
 
 func NewDatabaseInstance() {
 	Instance = &Database{}
 }
 
-func (db *Database) OpenConnection(config *config.Config) {
-	connectionString := config.GetConnectionString()
-
-	connection, err := sql.Open(config.Database.Driver, connectionString)
+func (db *Database) OpenConnection(config *config.Config) error {
+	connectionString, err := config.GetConnectionString()
 	if err != nil {
-		return
+		return err
 	}
-	connection.SetMaxOpenConns(int(config.Database.MaxOpenConnectionLifetime * time.Minute))
-	connection.SetMaxIdleConns(int(config.Database.MaxOpenIdleConnectionLifetime * time.Minute))
+	//TODO: check how set multiple connections :range by map
+	connection, err := nap.Open(config.Databases[0].Driver, connectionString)
+	if err != nil {
+		return err
+	}
+	connection.SetMaxOpenConns(int(config.Databases[0].MaxOpenConnectionLifetime * time.Minute))
+	connection.SetMaxIdleConns(int(config.Databases[0].MaxOpenIdleConnectionLifetime * time.Minute))
 	Instance.Conn = connection
+
+	return nil
 }
 
 func (db *Database) CloseConnection() {

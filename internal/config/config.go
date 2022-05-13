@@ -1,14 +1,15 @@
 package config
 
 import (
+	"cheeeasy2501/book-library/internal/database"
 	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	"time"
 )
 
 type Config struct {
-	Api      *ApiConfig
-	Database *DatabaseConfig
+	Api       *ApiConfig
+	Databases map[int16]*DatabaseConfig
 }
 
 func (c *Config) LoadEnv() error {
@@ -21,8 +22,11 @@ func (c *Config) LoadEnv() error {
 }
 
 // postgres://postgres:123456@127.0.0.1:5432/dummy
-func (c *Config) GetConnectionString() string {
-	return fmt.Sprintf("%s:%s@%s:%s/%s", c.Database.User, c.Database.Password, c.Database.Address, c.Database.Port, c.Database.Name)
+func (c *Config) GetConnectionString() (string, error) {
+	if _, ok := c.Databases[0]; !ok {
+		return "", database.DatabaseConfigNotFound
+	}
+	return fmt.Sprintf("%s:%s@%s:%s/%s", c.Databases[0].User, c.Databases[0].Password, c.Databases[0].Address, c.Databases[0].Port, c.Databases[0].Name), nil
 }
 
 func NewConfig() *Config {
