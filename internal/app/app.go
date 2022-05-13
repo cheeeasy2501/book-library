@@ -3,6 +3,7 @@ package app
 import (
 	"cheeeasy2501/book-library/internal/config"
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -24,7 +25,7 @@ func NewApp(context context.Context, config *config.Config, engine *gin.Engine, 
 }
 
 func (a App) StartHTTP() error {
-
+	fmt.Println(a.config)
 	err := a.engine.Run(":" + a.config.Api.Port)
 	if err != nil {
 		return err

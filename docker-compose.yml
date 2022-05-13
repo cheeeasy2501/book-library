@@ -3,36 +3,38 @@ services:
   app:
     build:
       context: .
-      dockerfile: build/Dockerfile
-    container_name: app
+      dockerfile: build/app/Dockerfile
+    container_name: book-library-app
     ports:
       - "80:80"
     networks:
       - book-library
   postgres:
     image: postgres:14.2
-    container_name: postgres
-    env_file:
-      - configs/.env.local
+    container_name: book-library-postgres
+    env_file: configs/.env.local
     environment:
-       POSTGRES_USER: ${DB_USER}
-       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    volumes:
+#      - ./postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
       - book-library
   prometheus:
     image: prom/prometheus
-    container_name: prometheus
+    container_name: book-library-prometheus
     ports:
       - "9090:9090"
     volumes:
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
     networks:
       - book-library
   grafana:
     image: grafana/grafana-enterprise:8.5.2
-    container_name: grafana
+    container_name: book-library-grafana
     ports:
       - "3000:3000"
     networks:

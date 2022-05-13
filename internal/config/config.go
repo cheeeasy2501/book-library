@@ -2,12 +2,22 @@ package config
 
 import (
 	"fmt"
+	"github.com/kelseyhightower/envconfig"
 	"time"
 )
 
 type Config struct {
 	Api      *ApiConfig
 	Database *DatabaseConfig
+}
+
+func (c *Config) LoadEnv() error {
+	err := envconfig.Process("", c)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // postgres://postgres:123456@127.0.0.1:5432/dummy
@@ -20,7 +30,7 @@ func NewConfig() *Config {
 }
 
 type ApiConfig struct {
-	Port string `envconfig:"API_PORT" default:"80"`
+	Port string `envconfig:"API_PORT" default:"8080"`
 }
 
 type DatabaseConfig struct {
@@ -32,7 +42,7 @@ type DatabaseConfig struct {
 	Name     string `envconfig:"DB_NAME" default:"book-library"`
 
 	MaxOpenConnection             string        `envconfig:"DB_MAX_OPEN_CONNECTION" default:"5"`
-	MaxOpenConnectionLifetime     time.Duration `envconfig:"DB_MAX_OPEN_CONNECTION_LIFETIME" default:"10"`
+	MaxOpenConnectionLifetime     time.Duration `envconfig:"DB_MAX_OPEN_CONNECTION_LIFETIME" default:"10m"`
 	MaxOpenIdleConnection         string        `envconfig:"DB_MAX_IDLE_CONNECTION" default:"1"`
-	MaxOpenIdleConnectionLifetime time.Duration `envconfig:"DB_MAX_IDLE_CONNECTION_LIFETIME" default:"60"`
+	MaxOpenIdleConnectionLifetime time.Duration `envconfig:"DB_MAX_IDLE_CONNECTION_LIFETIME" default:"60m"`
 }
