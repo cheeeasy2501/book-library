@@ -1,9 +1,9 @@
 
 start:
-	docker-compose --env-file configs/.env.local up -d postgres prometheus grafana
+	docker-compose --env-file configs/.env.local up -d postgres-master prometheus grafana
 
 stop:
-	docker-compose stop postgres prometheus grafana
+	docker-compose stop postgres-master prometheus grafana
 
 full_start:
 	docker-compose --env-file configs/.env.local up -d

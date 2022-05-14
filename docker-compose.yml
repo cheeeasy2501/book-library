@@ -19,8 +19,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./postgres-data/master:/var/lib/postgresql/data
-      - ./configs/potsgres/master_postgres.conf:/etc/postgresql/postgresql.conf
-      - ./configs/potsgres/master_pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./configs/postgres/master/postgres.conf:/etc/postgresql/postgresql.conf
+      - ./configs/postgres/master/pg_hba.conf:/etc/postgresql/pg_hba.conf
     ports:
       - "5432:5432"
     healthcheck:

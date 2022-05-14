@@ -1,4 +1,4 @@
-module cheeeasy2501/book-library
+module github.com/cheeeasy2501/book-library
 
 go 1.18
 

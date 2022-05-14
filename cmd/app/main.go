@@ -1,10 +1,9 @@
 package main
 
 import (
-	"cheeeasy2501/book-library/internal/app"
-	cnf "cheeeasy2501/book-library/internal/config"
 	"context"
-	"github.com/gin-gonic/gin"
+	"github.com/cheeeasy2501/book-library/internal/app"
+	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/sirupsen/logrus"
 	"os/signal"
 	"syscall"
@@ -15,16 +14,15 @@ func main() {
 	backgroundContext := context.Background()
 	appContext, cancel := signal.NotifyContext(backgroundContext, syscall.SIGTERM, syscall.SIGINT)
 	logger := logrus.New()
-	config := cnf.NewConfig()
-	err := config.LoadEnv()
+	cnf := config.NewConfig()
+	err := cnf.LoadEnv()
 	if err != nil {
 		logger.Errorf("Env is not loaded in config - %s", err)
 		wait <- struct{}{}
 		return
 	}
-	engine := gin.Default()
 
-	application := app.NewApp(appContext, config, engine, logger)
+	application := app.NewApp(appContext, cnf, logger)
 	go func() {
 		defer func() {
 			wait <- struct{}{}

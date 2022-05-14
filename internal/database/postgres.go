@@ -1,7 +1,7 @@
 package database
 
 import (
-	"cheeeasy2501/book-library/internal/config"
+	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/tsenart/nap"
 	"time"
 )

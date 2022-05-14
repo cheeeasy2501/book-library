@@ -1,8 +1,8 @@
 package config
 
 import (
-	"cheeeasy2501/book-library/internal/database"
 	"fmt"
+	"github.com/cheeeasy2501/book-library/internal/app/errors"
 	"github.com/kelseyhightower/envconfig"
 	"time"
 )
@@ -21,10 +21,10 @@ func (c *Config) LoadEnv() error {
 	return nil
 }
 
-// postgres://postgres:123456@127.0.0.1:5432/dummy
+// GetConnectionString postgres://postgres:123456@127.0.0.1:5432/dummy
 func (c *Config) GetConnectionString() (string, error) {
 	if _, ok := c.Databases[0]; !ok {
-		return "", database.DatabaseConfigNotFound
+		return "", errors.ConfigDatabaseNotFound
 	}
 	return fmt.Sprintf("%s:%s@%s:%s/%s", c.Databases[0].User, c.Databases[0].Password, c.Databases[0].Address, c.Databases[0].Port, c.Databases[0].Name), nil
 }
