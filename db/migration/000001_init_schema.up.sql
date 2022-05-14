@@ -26,6 +26,7 @@ CREATE TABLE books
     Book_Name        VARCHAR(30),
     Book_Description TEXT,
     Link             VARCHAR(100),
+    In_Stock         SMALLINT CHECK (In_Stock >= 0),
     Created_At       timestamp with time zone,
     Updated_At       timestamp with time zone
 );
