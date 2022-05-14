@@ -24,19 +24,23 @@ type HTTPError struct {
 
 func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) *App {
 	engine := gin.Default()
-	authorization := auth.NewAuthorization()
+	authorizationController := auth.NewAuthorization()
 
 	application := &App{
 		ctx:            ctx,
 		cnf:            cnf,
 		engine:         engine,
 		logger:         logger,
-		authController: authorization,
+		authController: authorizationController,
 	}
 
 	routesV1 := engine.Group("api/v1/")
 	{
 		routesV1.POST("signIn", application.SignInHandler)
+		books := routesV1.Group("books")
+		{
+			books.GET("/", nil)
+		}
 	}
 
 	return application
