@@ -2,21 +2,13 @@ package auth
 
 import (
 	"context"
-	"crypto/sha1"
+	"database/sql"
 	"github.com/cheeeasy2501/book-library/internal/user"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
 )
 
-func (auth *Authorization) SingIn(context context.Context, usr *user.User) (string, error) {
-	pwd := sha1.New()
-	pwd.Write([]byte(usr.Password))
-	usr.Password = string(pwd.Sum(nil))
-	usr, err := auth.UserRepo.GetAuth(context, usr.UserName, usr.Password)
-	if err != nil {
-		return "", err
-	}
-
+func (auth *Authorization) GenerateToken(usr *user.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
@@ -28,4 +20,37 @@ func (auth *Authorization) SingIn(context context.Context, usr *user.User) (stri
 	})
 
 	return token.SignedString([]byte("key"))
+}
+func (auth *Authorization) SingIn(ctx context.Context, usr *user.User) (string, error) {
+	encryptedPass, err := HashPassword(usr.Password)
+	if err != nil {
+		return "", err
+	}
+	usr.Password = encryptedPass
+	usr, err = auth.UserRepo.CheckSignIn(ctx, usr)
+	if err != nil {
+		return "", err
+	}
+
+	return auth.GenerateToken(usr)
+}
+
+func (auth *Authorization) SignUp(ctx context.Context, usr *user.User) (string, error) {
+	encryptedPass, err := HashPassword(usr.Password)
+	if err != nil {
+		return "", err
+	}
+	usr.Password = encryptedPass
+	_, err = auth.UserRepo.FindByUsername(ctx, usr.UserName)
+
+	if err != nil && err != sql.ErrNoRows {
+		return "", err
+	}
+
+	err = auth.UserRepo.Create(ctx, usr)
+	if err != nil {
+		return "", err
+	}
+
+	return auth.GenerateToken(usr)
 }

@@ -1,12 +1,12 @@
 package errors
 
-type HandlerValidateError string
-type HandlerNotFoundError string
+type ValidateError string
+type NotFoundError string
 
-func (e HandlerValidateError) Error() string {
+func (e ValidateError) Error() string {
 	return string(e)
 }
 
-func (e HandlerNotFoundError) Error() string {
+func (e NotFoundError) Error() string {
 	return string(e)
 }

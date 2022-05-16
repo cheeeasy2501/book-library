@@ -5,6 +5,7 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/app/errors"
 	"github.com/cheeeasy2501/book-library/internal/auth"
 	"github.com/cheeeasy2501/book-library/internal/config"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -22,7 +23,13 @@ type HTTPError struct {
 	Message string `json:"message"`
 }
 
-func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) *App {
+func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*App, error) {
+	database.SetNewDatabaseInstance()
+	err := database.Instance.OpenConnection(cnf)
+	if err != nil {
+		return nil, err
+	}
+
 	engine := gin.Default()
 	authorizationController := auth.NewAuthorization()
 
@@ -34,16 +41,17 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) *App
 		authController: authorizationController,
 	}
 
-	routesV1 := engine.Group("api/v1/")
+	routes := engine.Group("api/v1/")
 	{
-		routesV1.POST("signIn", application.SignInHandler)
-		books := routesV1.Group("books")
+		routes.POST("signIn", application.SignInHandler)
+		routes.POST("signUp", application.SignUpHandler)
+		books := routes.Group("books")
 		{
 			books.GET("/", nil)
 		}
 	}
 
-	return application
+	return application, nil
 }
 
 func (a App) StartHTTP() error {
@@ -70,10 +78,12 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	)
 
 	switch value := err.(type) {
-	case errors.HandlerValidateError:
+	case errors.ValidateError:
 		code, message = http.StatusBadRequest, value.Error()
-	case errors.HandlerNotFoundError:
+	case errors.NotFoundError:
 		code, message = http.StatusNotFound, value.Error()
+	case errors.Unauthorized:
+		code, message = http.StatusUnauthorized, value.Error()
 	default:
 		code, message = http.StatusInternalServerError, value.Error()
 	}
