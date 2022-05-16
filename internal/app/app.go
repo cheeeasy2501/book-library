@@ -45,9 +45,13 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 	{
 		routes.POST("signIn", application.SignInHandler)
 		routes.POST("signUp", application.SignUpHandler)
-		books := routes.Group("books")
+		books := routes.Group("books", auth.TokenMiddleware())
 		{
-			books.GET("/", nil)
+			books.GET("/", application.GetBooks)
+			books.GET("/:id", application.GetBook)
+			books.POST("/", application.CreateBook)
+			books.PATCH("/", application.UpdateBook)
+			books.DELETE("/", application.DeleteBook)
 		}
 	}
 

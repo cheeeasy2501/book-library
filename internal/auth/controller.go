@@ -4,21 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/cheeeasy2501/book-library/internal/user"
-	"github.com/golang-jwt/jwt/v4"
-	"time"
 )
-
-func (auth *Authorization) GenerateToken(usr *user.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-		UserName: usr.UserName,
-	})
-
-	return token.SignedString([]byte("key"))
-}
 
 func (auth *Authorization) SingIn(ctx context.Context, usr *user.User) (*user.User, string, error) {
 	usr, err := auth.UserRepo.CheckSignIn(ctx, usr)
