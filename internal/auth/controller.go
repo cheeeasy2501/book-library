@@ -14,25 +14,23 @@ func (auth *Authorization) GenerateToken(usr *user.User) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		UserName:  usr.UserName,
-		FirstName: usr.FirstName,
-		LastName:  usr.LastName,
+		UserName: usr.UserName,
 	})
 
 	return token.SignedString([]byte("key"))
 }
-func (auth *Authorization) SingIn(ctx context.Context, usr *user.User) (string, error) {
-	encryptedPass, err := HashPassword(usr.Password)
+
+func (auth *Authorization) SingIn(ctx context.Context, usr *user.User) (*user.User, string, error) {
+	usr, err := auth.UserRepo.CheckSignIn(ctx, usr)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
-	usr.Password = encryptedPass
-	usr, err = auth.UserRepo.CheckSignIn(ctx, usr)
+	token, err := auth.GenerateToken(usr)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
-	return auth.GenerateToken(usr)
+	return usr, token, nil
 }
 
 func (auth *Authorization) SignUp(ctx context.Context, usr *user.User) (string, error) {

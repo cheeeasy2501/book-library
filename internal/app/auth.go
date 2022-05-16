@@ -18,13 +18,14 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	token, err := a.authController.SingIn(ctx, usr)
+	usr, token, err := a.authController.SingIn(ctx, usr)
 	if err != nil {
 		return
 	}
 
 	a.SendResponse(ctx, gin.H{
 		"token": token,
+		"user":  usr,
 	})
 }
 
@@ -49,5 +50,6 @@ func (a *App) SignUpHandler(ctx *gin.Context) {
 
 	a.SendResponse(ctx, gin.H{
 		"token": token,
+		"user":  usr,
 	})
 }

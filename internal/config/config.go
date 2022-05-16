@@ -7,8 +7,7 @@ import (
 )
 
 type Config struct {
-	Api *ApiConfig
-	//Databases map[int16]*DatabaseConfig
+	Api      *ApiConfig
 	Database *DatabaseConfig
 }
 
@@ -23,12 +22,7 @@ func (c *Config) LoadEnv() error {
 
 // GetConnectionString postgres://postgres:123456@127.0.0.1:5432/dummy
 func (c *Config) GetConnectionString() (string, error) {
-	//if _, ok := c.Databases[0]; !ok {
-	//	return "", errors.ConfigDatabaseNotFound
-	//}
-	//return fmt.Sprintf("%s:%s@%s:%s/%s", c.Database.User, c.Database.Password, c.Database.Address, c.Database.Port, c.Database.Name), nil
 	return fmt.Sprintf("port=%s host=%s user=%s password=%s dbname=%s sslmode=disable", c.Database.Port, c.Database.Address, c.Database.User, c.Database.Password, c.Database.Name), nil
-	//return fmt.Sprintf("%s:%s@%s:%s/%s", c.Databases[0].User, c.Databases[0].Password, c.Databases[0].Address, c.Databases[0].Port, c.Databases[0].Name), nil
 }
 
 func NewConfig() *Config {
