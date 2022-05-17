@@ -1,21 +1,15 @@
 package auth
 
 import (
-	"github.com/cheeeasy2501/book-library/internal/app/errors"
+	e "github.com/cheeeasy2501/book-library/internal/errors"
 	"github.com/cheeeasy2501/book-library/internal/user"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
-	"net/http"
-	"strings"
 	"time"
 )
 
 type Claims struct {
 	jwt.RegisteredClaims
-	UserName  string `json:"userName"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	UserId int64 `json:"userId"`
 }
 
 func (auth *Authorization) GenerateToken(usr *user.User) (string, error) {
@@ -24,60 +18,26 @@ func (auth *Authorization) GenerateToken(usr *user.User) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
-		UserName: usr.UserName,
+		UserId: usr.Id,
 	})
-
-	return token.SignedString([]byte("key"))
+	return token.SignedString([]byte(auth.AuthConfig.GetJWTKey()))
 }
 
-func (s *Authorization) ValidateToken(token string) (*user.User, error) {
-	// TODO: verify token implementations
-	//claims, err := validateIDToken(token, s.PubKey) // uses public RSA key
-	//
-	//// We'll just return unauthorized error in all instances of failing to verify user
-	//if err != nil {
-	//	log.Printf("Unable to validate or parse idToken - Error: %v\n", err)
-	//	return nil, apperrors.NewAuthorization("Unable to verify user from idToken")
-	//}
-	//
-	//return claims.User, nil
-}
-
-type authHeader struct {
-	Token string `header:"Authorization"`
-}
-
-func TokenMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		header := authHeader{}
-		if err := c.ShouldBindHeader(&header); err != nil {
-			if _, ok := err.(validator.ValidationErrors); ok {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": err,
-				})
-				c.Abort()
-				return
-			}
-
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": err,
-				})
-			}
+func (auth *Authorization) ParseToken(accessToken string) (int64, error) {
+	token, err := jwt.ParseWithClaims(accessToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, e.Unauthorized("Invalid signing method")
 		}
-
-		idToken := strings.Split(header.Token, "Bearer ")
-
-		if len(idToken) < 2 {
-			err := errors.ValidateError("Must provide Authorization header with format `Bearer {token}`")
-
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": err,
-			})
-			c.Abort()
-			return
-		}
-
-		//user, err := s.ValidateIDToken(idTokenHeader[1])
+		return []byte(auth.AuthConfig.GetJWTKey()), nil
+	})
+	if err != nil {
+		return 0, e.Unauthorized(err.Error())
 	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		return 0, err
+	}
+
+	return claims.UserId, nil
 }

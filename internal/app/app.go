@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
-	"github.com/cheeeasy2501/book-library/internal/app/errors"
 	"github.com/cheeeasy2501/book-library/internal/auth"
 	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/cheeeasy2501/book-library/internal/database"
+	errors2 "github.com/cheeeasy2501/book-library/internal/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -31,7 +31,7 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 	}
 
 	engine := gin.Default()
-	authorizationController := auth.NewAuthorization()
+	authorizationController := auth.NewAuthorization(cnf.Auth)
 
 	application := &App{
 		ctx:            ctx,
@@ -45,7 +45,7 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 	{
 		routes.POST("signIn", application.SignInHandler)
 		routes.POST("signUp", application.SignUpHandler)
-		books := routes.Group("books", auth.TokenMiddleware())
+		books := routes.Group("books", application.ValidateTokenMiddleware)
 		{
 			books.GET("/", application.GetBooks)
 			books.GET("/:id", application.GetBook)
@@ -82,11 +82,11 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	)
 
 	switch value := err.(type) {
-	case errors.ValidateError:
+	case errors2.ValidateError:
 		code, message = http.StatusBadRequest, value.Error()
-	case errors.NotFoundError:
+	case errors2.NotFoundError:
 		code, message = http.StatusNotFound, value.Error()
-	case errors.Unauthorized:
+	case errors2.Unauthorized:
 		code, message = http.StatusUnauthorized, value.Error()
 	default:
 		code, message = http.StatusInternalServerError, value.Error()

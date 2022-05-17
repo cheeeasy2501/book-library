@@ -3,15 +3,15 @@ package user
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
-	e "github.com/cheeeasy2501/book-library/internal/app/errors"
 	"github.com/cheeeasy2501/book-library/internal/database"
+	"github.com/cheeeasy2501/book-library/internal/errors"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
 )
 
 type UserRepoInterface interface {
-	CheckSignIn(context.Context, *User) error
+	CheckSignIn(context.Context, *User) (*User, error)
 	Get(context.Context, *User)
 	FindByUsername(context.Context, string) (*User, error)
 }
@@ -27,7 +27,7 @@ func (ur *UserRepo) CheckSignIn(ctx context.Context, usr *User) (*User, error) {
 	err = bcrypt.CompareHashAndPassword([]byte(find.Password), []byte(usr.Password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, e.Unauthorized("Unauthorized user!")
+			return nil, errors.Unauthorized("Unauthorized user!")
 		}
 
 		return nil, err
@@ -43,7 +43,7 @@ func (ur *UserRepo) Get(ctx context.Context, user *User) {
 // FindByUsername
 func (ur *UserRepo) FindByUsername(ctx context.Context, username string) (*User, error) {
 	if strings.TrimSpace(username) == "" {
-		return nil, e.ValidateError("Username is empty!")
+		return nil, errors.ValidateError("Username is empty!")
 	}
 
 	users := sq.Select("id, firstname, lastname, email, username, password").From("users")

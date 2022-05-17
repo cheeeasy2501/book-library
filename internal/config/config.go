@@ -7,26 +7,25 @@ import (
 )
 
 type Config struct {
+	Common   *CommonConfig
+	Auth     *AuthConfig
 	Api      *ApiConfig
 	Database *DatabaseConfig
 }
 
-func (c *Config) LoadEnv() error {
-	err := envconfig.Process("", c)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetConnectionString postgres://postgres:123456@127.0.0.1:5432/dummy
-func (c *Config) GetConnectionString() (string, error) {
-	return fmt.Sprintf("port=%s host=%s user=%s password=%s dbname=%s sslmode=disable", c.Database.Port, c.Database.Address, c.Database.User, c.Database.Password, c.Database.Name), nil
-}
-
 func NewConfig() *Config {
 	return &Config{}
+}
+
+type CommonConfig struct {
+}
+
+type AuthConfig struct {
+	jwtKey string `envconfig:"JWT_KEY"`
+}
+
+func (ac *AuthConfig) GetJWTKey() string {
+	return ac.jwtKey
 }
 
 type ApiConfig struct {
@@ -45,4 +44,18 @@ type DatabaseConfig struct {
 	MaxOpenConnectionLifetime     time.Duration `envconfig:"DB_MAX_OPEN_CONNECTION_LIFETIME" default:"10m"`
 	MaxOpenIdleConnection         string        `envconfig:"DB_MAX_IDLE_CONNECTION" default:"1"`
 	MaxOpenIdleConnectionLifetime time.Duration `envconfig:"DB_MAX_IDLE_CONNECTION_LIFETIME" default:"60m"`
+}
+
+func (c *Config) LoadEnv() error {
+	err := envconfig.Process("", c)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetConnectionString postgres://postgres:123456@127.0.0.1:5432/dummy
+func (c *Config) GetConnectionString() (string, error) {
+	return fmt.Sprintf("port=%s host=%s user=%s password=%s dbname=%s sslmode=disable", c.Database.Port, c.Database.Address, c.Database.User, c.Database.Password, c.Database.Name), nil
 }
