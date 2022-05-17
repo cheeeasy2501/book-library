@@ -4,6 +4,8 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
+	"strconv"
+	"time"
 )
 
 func (a *App) GetBooks(ctx *gin.Context) {
@@ -71,7 +73,33 @@ func (a *App) CreateBook(ctx *gin.Context) {
 }
 
 func (a *App) UpdateBook(ctx *gin.Context) {
+	var (
+		err  error
+		book *model.Book
+		id   uint64
+	)
 
+	defer func() {
+		a.SendError(ctx, err)
+	}()
+
+	err = ctx.BindJSON(&book)
+	if err != nil {
+		return
+	}
+	id, err = strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		return
+	}
+	book.ID = id
+	book.UpdatedAt = time.Now()
+
+	err = a.service.Book.Update(ctx, book)
+	if err != nil {
+		return
+	}
+
+	a.SendResponse(ctx, book)
 }
 
 func (a *App) DeleteBook(ctx *gin.Context) {

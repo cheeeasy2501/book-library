@@ -17,8 +17,8 @@ type UserRepoInterface interface {
 type BookRepoInterface interface {
 	GetById(ctx context.Context, id uint64) (*model.Book, error)
 	GetByPage(ctx context.Context, page uint64, limit uint64) ([]model.Book, error)
-	Create(ctx context.Context, book *model.Book) (*model.Book, error)
-	Update(book *model.Book) (*model.Book, error)
+	Create(ctx context.Context, book *model.Book) error
+	Update(ctx context.Context, book *model.Book) error
 	Delete(id uuid.UUID) error
 }
 

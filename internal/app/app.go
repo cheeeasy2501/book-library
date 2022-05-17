@@ -51,8 +51,8 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 			books.GET("/", application.GetBooks)
 			books.GET("/:id", application.GetBook)
 			books.POST("/", application.CreateBook)
-			books.PATCH("/", application.UpdateBook)
-			books.DELETE("/", application.DeleteBook)
+			books.PATCH("/:id", application.UpdateBook)
+			books.DELETE("/:id", application.DeleteBook)
 		}
 	}
 

@@ -26,8 +26,8 @@ type BookServiceInterface interface {
 	Create(ctx context.Context, book *model.Book) error
 	GetAll(ctx context.Context, query model.GetBooksParams) ([]model.Book, error)
 	GetById(ctx context.Context, bookId uint64) (*model.Book, error)
+	Update(ctx context.Context, book *model.Book) error
 	Delete(ctx context.Context, bookId uint64) error
-	Update(ctx context.Context, bookId uint64, input model.Book) error
 }
 
 type Service struct {

@@ -8,7 +8,6 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/google/uuid"
 	"github.com/tsenart/nap"
-	"time"
 )
 
 const (
@@ -87,34 +86,50 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 	return &book, nil
 }
 
-func (br *BookRepository) Create(ctx context.Context, book *model.Book) (*model.Book, error) {
+func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 	err := book.Validate()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	currentTime := time.Now()
+
 	query, args, err := sq.Insert(bookTableName).Columns("author_id, title, description, link, in_stock, created_at, updated_at").
-		Values(book.AuthorID, book.Title, book.Description, book.Link, book.InStock, currentTime, currentTime).PlaceholderFormat(sq.Dollar).
+		Values(book.AuthorID, book.Title, book.Description, book.Link, book.InStock, book.CreatedAt, book.UpdatedAt).PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, created_at, updated_at").ToSql()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	stmt, err := br.db.PrepareContext(ctx, query)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	result := stmt.QueryRow(args...)
 	err = result.Scan(&book.ID, &book.CreatedAt, &book.UpdatedAt)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return book, nil
+	return nil
 }
 
-func (br *BookRepository) Update(book *model.Book) (*model.Book, error) {
+func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
+	query, args, err := sq.Update(bookTableName).Set("author_id", book.AuthorID).
+		Set("title", book.Title).Set("description", book.Description).Set("link", book.Link).
+		Set("updated_at", book.UpdatedAt).PlaceholderFormat(sq.Dollar).Suffix("RETURNING created_at").
+		Where(sq.Eq{"id": book.ID}).ToSql()
+	if err != nil {
+		return err
+	}
+	stmt, err := br.db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	result := stmt.QueryRow(args...)
+	err = result.Scan(&book.CreatedAt)
+	if err != nil {
+		return err
+	}
 
-	return book, nil
+	return nil
 }
 
 func (br *BookRepository) Delete(id uuid.UUID) error {
