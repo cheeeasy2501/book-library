@@ -1,4 +1,4 @@
-package errors
+package apperrors
 
 type ValidateError string
 type NotFoundError string

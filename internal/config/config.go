@@ -46,6 +46,11 @@ type DatabaseConfig struct {
 	MaxOpenIdleConnectionLifetime time.Duration `envconfig:"DB_MAX_IDLE_CONNECTION_LIFETIME" default:"60m"`
 }
 
+// GetConnectionString postgres://postgres:123456@127.0.0.1:5432/dummy
+func (dc *DatabaseConfig) GetConnectionString() (string, error) {
+	return fmt.Sprintf("port=%s host=%s user=%s password=%s dbname=%s sslmode=disable", dc.Port, dc.Address, dc.User, dc.Password, dc.Name), nil
+}
+
 func (c *Config) LoadEnv() error {
 	err := envconfig.Process("", c)
 	if err != nil {
@@ -53,9 +58,4 @@ func (c *Config) LoadEnv() error {
 	}
 
 	return nil
-}
-
-// GetConnectionString postgres://postgres:123456@127.0.0.1:5432/dummy
-func (c *Config) GetConnectionString() (string, error) {
-	return fmt.Sprintf("port=%s host=%s user=%s password=%s dbname=%s sslmode=disable", c.Database.Port, c.Database.Address, c.Database.User, c.Database.Password, c.Database.Name), nil
 }
