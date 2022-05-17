@@ -9,6 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	bookTableName = "books"
+)
+
 type BookInterface interface {
 	GetById(id int64) (*Book, error)
 	Get(page int, limit int) ([]*Book, error)
@@ -25,7 +29,7 @@ func (br *BookRepository) Get(ctx context.Context, page uint64, limit uint64) ([
 		books []Book
 	)
 	offset := limit * (page - 1)
-	query, args, err := sq.Select("*").From("books").Limit(limit).Offset(offset).
+	query, args, err := sq.Select("*").From(bookTableName).Limit(limit).Offset(offset).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, err
@@ -61,7 +65,7 @@ func (br *BookRepository) Get(ctx context.Context, page uint64, limit uint64) ([
 func (br *BookRepository) GetById(ctx context.Context, id uint64) (*Book, error) {
 	var book Book
 
-	query, args, err := sq.Select("*").From("books").Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, args, err := sq.Select("*").From(bookTableName).Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, err
 	}
