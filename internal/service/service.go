@@ -1,0 +1,44 @@
+package service
+
+import (
+	"context"
+	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/repository"
+)
+
+type AuthorizationServiceInterface interface {
+	CreateUser(ctx context.Context, usr *model.User)
+	GenerateToken(usr *model.User) (string, error)
+	ParseToken(accessToken string) (int64, error)
+	HashPassword(password string) (string, error)
+}
+
+type UserServiceInterface interface {
+	Create(ctx context.Context, user model.User) (int, error)
+	GetAll(ctx context.Context) ([]model.User, error)
+	GetById(ctx context.Context, userId int) (model.User, error)
+	Delete(ctx context.Context, userId int) error
+	Update(ctx context.Context, userId int) error
+}
+
+type BookServiceInterface interface {
+	Create(ctx context.Context, book model.Book) (int, error)
+	GetAll(ctx context.Context, query model.GetBooksParams) ([]model.Book, error)
+	GetById(ctx context.Context, bookId int) (model.Book, error)
+	Delete(ctx context.Context, bookId int) error
+	Update(ctx context.Context, bookId int, input model.Book) error
+}
+
+type Service struct {
+	Authorization AuthorizationServiceInterface
+	Book          BookServiceInterface
+	User          UserServiceInterface
+}
+
+func NewService(repos *repository.Repository) *Service {
+	return &Service{
+		Authorization: NewAuthorizationService(repos.User, "Secret"),
+		Book:          NewBookService(repos.Book),
+		User:          NewUserService(repos.User),
+	}
+}

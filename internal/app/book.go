@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/cheeeasy2501/book-library/internal/book"
 	"github.com/cheeeasy2501/book-library/internal/errors"
+	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,14 +15,13 @@ func (a *App) GetBooks(ctx *gin.Context) {
 	defer func() {
 		a.SendError(ctx, err)
 	}()
-	queryParams := book.GetBooksQuery{}
-	err = ctx.ShouldBindQuery(&queryParams)
+	params := model.GetBooksParams{}
+	err = ctx.ShouldBindQuery(&params)
 	if err != nil {
 		err = errors.ValidateError(err.Error())
 		return
 	}
-
-	books, err := a.bookController.GetBooks(ctx, queryParams.Page, queryParams.Limit)
+	books, err := a.service.Book.GetAll(ctx, params)
 	if err != nil {
 		return
 	}

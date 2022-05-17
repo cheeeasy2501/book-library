@@ -1,25 +1,29 @@
-package user
+package repository
 
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/errors"
+	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/tsenart/nap"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
 )
 
-type UserRepoInterface interface {
-	CheckSignIn(context.Context, *User) (*User, error)
-	Get(context.Context, *User)
-	FindByUsername(context.Context, string) (*User, error)
+type UserRepository struct {
+	db *nap.DB
 }
-type UserRepo struct {
+
+func NewUserRepository(db *nap.DB) *UserRepository {
+	return &UserRepository{
+		db: db,
+	}
 }
 
 // CheckSignIn Check user and password into database
-func (ur *UserRepo) CheckSignIn(ctx context.Context, usr *User) (*User, error) {
+func (ur *UserRepository) CheckSignIn(ctx context.Context, usr *model.User) (*model.User, error) {
 	find, err := ur.FindByUsername(ctx, usr.UserName)
 	if err != nil {
 		return nil, err
@@ -36,12 +40,12 @@ func (ur *UserRepo) CheckSignIn(ctx context.Context, usr *User) (*User, error) {
 	return find, err
 }
 
-func (ur *UserRepo) Get(ctx context.Context, user *User) {
+func (ur *UserRepository) Get(ctx context.Context, user *model.User) {
 	//user, err := database.Instance.Conn.QueryContext()
 }
 
 // FindByUsername
-func (ur *UserRepo) FindByUsername(ctx context.Context, username string) (*User, error) {
+func (ur *UserRepository) FindByUsername(ctx context.Context, username string) (*model.User, error) {
 	if strings.TrimSpace(username) == "" {
 		return nil, errors.ValidateError("Username is empty!")
 	}
@@ -54,7 +58,7 @@ func (ur *UserRepo) FindByUsername(ctx context.Context, username string) (*User,
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow(args...)
-	usr := &User{}
+	usr := &model.User{}
 	err = row.Scan(&usr.Id, &usr.FirstName, &usr.LastName, &usr.Email, &usr.UserName, &usr.Password)
 
 	if err != nil {
@@ -64,7 +68,7 @@ func (ur *UserRepo) FindByUsername(ctx context.Context, username string) (*User,
 	return usr, err
 }
 
-func (ur *UserRepo) Create(ctx context.Context, usr *User) error {
+func (ur *UserRepository) Create(ctx context.Context, usr *model.User) error {
 	var id int64
 	currentDateTime := time.Now().Format(time.RFC3339)
 	query, args, err := sq.Insert("users").Columns("firstname", "lastname", "email", "username", "password", "created_at", "updated_at").

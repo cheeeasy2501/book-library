@@ -2,23 +2,24 @@ package app
 
 import (
 	"context"
-	"github.com/cheeeasy2501/book-library/internal/auth"
-	"github.com/cheeeasy2501/book-library/internal/book"
 	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/cheeeasy2501/book-library/internal/database"
 	e "github.com/cheeeasy2501/book-library/internal/errors"
+	"github.com/cheeeasy2501/book-library/internal/repository"
+	"github.com/cheeeasy2501/book-library/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type App struct {
-	ctx            context.Context
-	cnf            *config.Config
-	engine         *gin.Engine
-	logger         *logrus.Logger
-	authController *auth.Authorization
-	bookController *book.BookController
+	ctx     context.Context
+	cnf     *config.Config
+	engine  *gin.Engine
+	logger  *logrus.Logger
+	service *service.Service
+	//authController *auth.Authorization
+	//bookController *book.BookController
 }
 
 type HTTPError struct {
@@ -33,16 +34,20 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 	}
 
 	engine := gin.Default()
-	authorizationController := auth.NewAuthorization(cnf.Auth)
-	bookController := book.NewBookController()
+	//TODO refactoring
+	repos := repository.NewRepository(database.Instance.Conn)
+	services := service.NewService(repos)
+	//authorizationController := auth.NewAuthorization(cnf.Auth)
+	//bookController := book.NewBookController()
 
 	application := &App{
-		ctx:            ctx,
-		cnf:            cnf,
-		engine:         engine,
-		logger:         logger,
-		authController: authorizationController,
-		bookController: bookController,
+		ctx:    ctx,
+		cnf:    cnf,
+		engine: engine,
+		logger: logger,
+		//authController: authorizationController,
+		//bookController: bookController,
+		service: services,
 	}
 
 	routes := engine.Group("api/v1/")
