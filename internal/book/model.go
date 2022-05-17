@@ -1,10 +1,21 @@
 package book
 
-import "github.com/google/uuid"
+import (
+	"time"
+)
 
 type Book struct {
-	ID          uuid.UUID `json:"id"`
-	AuthorID    int64     `json:"authorId"`
+	ID          uint64    `json:"id"`
+	AuthorID    *int64    `json:"authorId"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Link        string    `json:"link"`
+	InStock     uint      `json:"inStock"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+type GetBooksQuery struct {
+	Page  uint64 `form:"page" json:"page" binding:"required,gte=1"`
+	Limit uint64 `form:"limit" json:"limit" binding:"required,gte=1"`
 }
