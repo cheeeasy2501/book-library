@@ -22,7 +22,13 @@ func main() {
 		return
 	}
 
-	application := app.NewApp(appContext, cnf, logger)
+	application, err := app.NewApp(appContext, cnf, logger)
+	if err != nil {
+		logger.Errorf("App not started - %s", err.Error())
+		wait <- struct{}{}
+		return
+	}
+
 	go func() {
 		defer func() {
 			wait <- struct{}{}
@@ -34,6 +40,6 @@ func main() {
 	}()
 
 	<-wait
-	logger.Infof("Ending app...\n")
-	logger.Infof("Ended...\n")
+	logger.Infof("Stop application!\n")
+	logger.Infof("Application stoped!\n")
 }

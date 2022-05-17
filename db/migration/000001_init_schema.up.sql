@@ -1,8 +1,8 @@
 CREATE TABLE users
 (
     Id         SERIAL PRIMARY KEY,
-    FirstName  VARCHAR(30)        NULL,
-    LastName   VARCHAR(30)        NULL,
+    FirstName  VARCHAR(30) NULL,
+    LastName   VARCHAR(30) NULL,
     Email      VARCHAR(30) UNIQUE NULL,
     UserName   VARCHAR(50) UNIQUE,
     Password   varchar(255),
@@ -21,14 +21,14 @@ CREATE TABLE author
 
 CREATE TABLE books
 (
-    Id               SERIAL PRIMARY KEY,
-    Author_Id        INTEGER REFERENCES author (Id) ON DELETE SET NULL,
-    Book_Name        VARCHAR(30),
-    Book_Description TEXT,
-    Link             VARCHAR(100),
-    In_Stock         SMALLINT CHECK (In_Stock >= 0),
-    Created_At       timestamp with time zone,
-    Updated_At       timestamp with time zone
+    Id          SERIAL PRIMARY KEY,
+    Author_Id   INTEGER REFERENCES author (Id) ON DELETE SET NULL,
+    Title       VARCHAR(30),
+    Description TEXT,
+    Link        VARCHAR(100),
+    In_Stock    SMALLINT CHECK (In_Stock >= 0),
+    Created_At  timestamp with time zone,
+    Updated_At  timestamp with time zone
 );
 
 CREATE TABLE publish_house

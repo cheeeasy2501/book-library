@@ -2,30 +2,39 @@ package auth
 
 import (
 	"context"
-	"crypto/sha1"
+	"database/sql"
 	"github.com/cheeeasy2501/book-library/internal/user"
-	"github.com/golang-jwt/jwt/v4"
-	"time"
 )
 
-func (auth *Authorization) SingIn(context context.Context, usr *user.User) (string, error) {
-	pwd := sha1.New()
-	pwd.Write([]byte(usr.Password))
-	usr.Password = string(pwd.Sum(nil))
-	usr, err := auth.UserRepo.GetAuth(context, usr.UserName, usr.Password)
+func (auth *Authorization) SingIn(ctx context.Context, usr *user.User) (*user.User, string, error) {
+	usr, err := auth.UserRepo.CheckSignIn(ctx, usr)
+	if err != nil {
+		return nil, "", err
+	}
+	token, err := auth.GenerateToken(usr)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return usr, token, nil
+}
+
+func (auth *Authorization) SignUp(ctx context.Context, usr *user.User) (string, error) {
+	encryptedPass, err := HashPassword(usr.Password)
+	if err != nil {
+		return "", err
+	}
+	usr.Password = encryptedPass
+	_, err = auth.UserRepo.FindByUsername(ctx, usr.UserName)
+
+	if err != nil && err != sql.ErrNoRows {
+		return "", err
+	}
+
+	err = auth.UserRepo.Create(ctx, usr)
 	if err != nil {
 		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &Claims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-		UserName:  usr.UserName,
-		FirstName: usr.FirstName,
-		LastName:  usr.LastName,
-	})
-
-	return token.SignedString([]byte("key"))
+	return auth.GenerateToken(usr)
 }

@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
-	"github.com/cheeeasy2501/book-library/internal/app/errors"
 	"github.com/cheeeasy2501/book-library/internal/auth"
+	"github.com/cheeeasy2501/book-library/internal/book"
 	"github.com/cheeeasy2501/book-library/internal/config"
+	"github.com/cheeeasy2501/book-library/internal/database"
+	e "github.com/cheeeasy2501/book-library/internal/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -16,15 +18,23 @@ type App struct {
 	engine         *gin.Engine
 	logger         *logrus.Logger
 	authController *auth.Authorization
+	bookController *book.BookController
 }
 
 type HTTPError struct {
 	Message string `json:"message"`
 }
 
-func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) *App {
+func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*App, error) {
+	database.SetNewDatabaseInstance()
+	err := database.Instance.OpenConnection(cnf)
+	if err != nil {
+		return nil, err
+	}
+
 	engine := gin.Default()
-	authorizationController := auth.NewAuthorization()
+	authorizationController := auth.NewAuthorization(cnf.Auth)
+	bookController := book.NewBookController()
 
 	application := &App{
 		ctx:            ctx,
@@ -32,18 +42,24 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) *App
 		engine:         engine,
 		logger:         logger,
 		authController: authorizationController,
+		bookController: bookController,
 	}
 
-	routesV1 := engine.Group("api/v1/")
+	routes := engine.Group("api/v1/")
 	{
-		routesV1.POST("signIn", application.SignInHandler)
-		books := routesV1.Group("books")
+		routes.POST("signIn", application.SignInHandler)
+		routes.POST("signUp", application.SignUpHandler)
+		books := routes.Group("books", application.ValidateTokenMiddleware)
 		{
-			books.GET("/", nil)
+			books.GET("/", application.GetBooks)
+			books.GET("/:id", application.GetBook)
+			books.POST("/", application.CreateBook)
+			books.PATCH("/", application.UpdateBook)
+			books.DELETE("/", application.DeleteBook)
 		}
 	}
 
-	return application
+	return application, nil
 }
 
 func (a App) StartHTTP() error {
@@ -70,10 +86,12 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	)
 
 	switch value := err.(type) {
-	case errors.HandlerValidateError:
+	case e.ValidateError:
 		code, message = http.StatusBadRequest, value.Error()
-	case errors.HandlerNotFoundError:
+	case e.NotFoundError:
 		code, message = http.StatusNotFound, value.Error()
+	case e.Unauthorized:
+		code, message = http.StatusUnauthorized, value.Error()
 	default:
 		code, message = http.StatusInternalServerError, value.Error()
 	}
