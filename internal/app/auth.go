@@ -1,8 +1,8 @@
 package app
 
 import (
-	e "github.com/cheeeasy2501/book-library/internal/errors"
-	"github.com/cheeeasy2501/book-library/internal/user"
+	e "github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
@@ -13,7 +13,7 @@ const (
 
 func (a *App) SignInHandler(ctx *gin.Context) {
 	var (
-		usr *user.User
+		usr *model.User
 		err error
 	)
 	defer func() {
@@ -24,7 +24,7 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	usr, token, err := a.authController.SingIn(ctx, usr)
+	usr, token, err := a.service.Authorization.SignIn(ctx, usr)
 	if err != nil {
 		return
 	}
@@ -37,7 +37,7 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 
 func (a *App) SignUpHandler(ctx *gin.Context) {
 	var (
-		usr *user.User
+		usr *model.User
 		err error
 	)
 	defer func() {
@@ -49,7 +49,7 @@ func (a *App) SignUpHandler(ctx *gin.Context) {
 		return
 	}
 
-	token, err := a.authController.SignUp(ctx, usr)
+	token, err := a.service.Authorization.SignUp(ctx, usr)
 	if err != nil {
 		return
 	}
@@ -80,7 +80,7 @@ func (a *App) ValidateTokenMiddleware(ctx *gin.Context) {
 		return
 	}
 	//parse token
-	userId, err := a.authController.ParseToken(headerParts[1])
+	userId, err := a.service.Authorization.ParseToken(headerParts[1])
 	if err != nil {
 		return
 	}

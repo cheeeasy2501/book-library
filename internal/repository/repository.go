@@ -11,12 +11,13 @@ type UserRepoInterface interface {
 	CheckSignIn(context.Context, *model.User) (*model.User, error)
 	Get(context.Context, *model.User)
 	FindByUsername(context.Context, string) (*model.User, error)
+	Create(ctx context.Context, usr *model.User) error
 }
 
 type BookRepoInterface interface {
 	GetById(ctx context.Context, id uint64) (*model.Book, error)
-	Get(ctx context.Context, page uint64, limit uint64) ([]model.Book, error)
-	Create(*model.Book) (*model.Book, error)
+	GetByPage(ctx context.Context, page uint64, limit uint64) ([]model.Book, error)
+	Create(ctx context.Context, book *model.Book) (*model.Book, error)
 	Update(book *model.Book) (*model.Book, error)
 	Delete(id uuid.UUID) error
 }

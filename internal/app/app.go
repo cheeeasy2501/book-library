@@ -2,9 +2,9 @@ package app
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/cheeeasy2501/book-library/internal/database"
-	e "github.com/cheeeasy2501/book-library/internal/errors"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"github.com/cheeeasy2501/book-library/internal/service"
 	"github.com/gin-gonic/gin"
@@ -18,8 +18,6 @@ type App struct {
 	engine  *gin.Engine
 	logger  *logrus.Logger
 	service *service.Service
-	//authController *auth.Authorization
-	//bookController *book.BookController
 }
 
 type HTTPError struct {
@@ -27,26 +25,20 @@ type HTTPError struct {
 }
 
 func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*App, error) {
-	database.SetNewDatabaseInstance()
-	err := database.Instance.OpenConnection(cnf)
+	// create and open new connection
+	connection, err := database.NewDatabaseConnection(cnf.Database)
 	if err != nil {
 		return nil, err
 	}
-
 	engine := gin.Default()
-	//TODO refactoring
-	repos := repository.NewRepository(database.Instance.Conn)
+	repos := repository.NewRepository(connection)
 	services := service.NewService(repos)
-	//authorizationController := auth.NewAuthorization(cnf.Auth)
-	//bookController := book.NewBookController()
 
 	application := &App{
-		ctx:    ctx,
-		cnf:    cnf,
-		engine: engine,
-		logger: logger,
-		//authController: authorizationController,
-		//bookController: bookController,
+		ctx:     ctx,
+		cnf:     cnf,
+		engine:  engine,
+		logger:  logger,
 		service: services,
 	}
 
@@ -91,11 +83,11 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	)
 
 	switch value := err.(type) {
-	case e.ValidateError:
+	case apperrors.ValidateError:
 		code, message = http.StatusBadRequest, value.Error()
-	case e.NotFoundError:
+	case apperrors.NotFoundError:
 		code, message = http.StatusNotFound, value.Error()
-	case e.Unauthorized:
+	case apperrors.Unauthorized:
 		code, message = http.StatusUnauthorized, value.Error()
 	default:
 		code, message = http.StatusInternalServerError, value.Error()

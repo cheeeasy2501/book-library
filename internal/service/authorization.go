@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	e "github.com/cheeeasy2501/book-library/internal/errors"
+	"database/sql"
+	e "github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"github.com/golang-jwt/jwt/v4"
@@ -62,6 +63,35 @@ func (auth *AuthorizationService) HashPassword(password string) (string, error) 
 	return string(bytes), err
 }
 
-func (auth *AuthorizationService) CreateUser(ctx context.Context, usr *model.User) {
+func (auth *AuthorizationService) SignIn(ctx context.Context, usr *model.User) (*model.User, string, error) {
+	usr, err := auth.repo.CheckSignIn(ctx, usr)
+	if err != nil {
+		return nil, "", err
+	}
+	token, err := auth.GenerateToken(usr)
+	if err != nil {
+		return nil, "", err
+	}
 
+	return usr, token, nil
+}
+
+func (auth *AuthorizationService) SignUp(ctx context.Context, usr *model.User) (string, error) {
+	encryptedPass, err := auth.HashPassword(usr.Password)
+	if err != nil {
+		return "", err
+	}
+	usr.Password = encryptedPass
+	_, err = auth.repo.FindByUsername(ctx, usr.UserName)
+
+	if err != nil && err != sql.ErrNoRows {
+		return "", err
+	}
+
+	err = auth.repo.Create(ctx, usr)
+	if err != nil {
+		return "", err
+	}
+
+	return auth.GenerateToken(usr)
 }

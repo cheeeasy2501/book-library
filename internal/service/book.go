@@ -15,20 +15,28 @@ func NewBookService(repo repository.BookRepoInterface) *BookService {
 		repo: repo,
 	}
 }
-func (bs *BookService) Create(ctx context.Context, book model.Book) (int, error) {
-	return 0, nil
+func (bs *BookService) Create(ctx context.Context, book *model.Book) error {
+	book, err := bs.repo.Create(ctx, book)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 func (bs *BookService) GetAll(ctx context.Context, query model.GetBooksParams) ([]model.Book, error) {
 	var books []model.Book
 	return books, nil
 }
-func (bs *BookService) GetById(ctx context.Context, bookId int) (model.Book, error) {
-	var book model.Book
+func (bs *BookService) GetById(ctx context.Context, bookId uint64) (*model.Book, error) {
+	book, err := bs.repo.GetById(ctx, bookId)
+	if err != nil {
+		return nil, err
+	}
+
 	return book, nil
 }
-func (bs *BookService) Delete(ctx context.Context, bookId int) error {
+func (bs *BookService) Delete(ctx context.Context, bookId uint64) error {
 	return nil
 }
-func (bs *BookService) Update(ctx context.Context, bookId int, input model.Book) error {
+func (bs *BookService) Update(ctx context.Context, bookId uint64, input model.Book) error {
 	return nil
 }
