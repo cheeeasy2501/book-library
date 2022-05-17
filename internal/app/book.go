@@ -30,7 +30,23 @@ func (a *App) GetBooks(ctx *gin.Context) {
 }
 
 func (a *App) GetBook(ctx *gin.Context) {
+	var (
+		err error
+	)
 
+	defer func() {
+		a.SendError(ctx, err)
+	}()
+
+	uriParams := book.GetBookQuery{}
+	err = ctx.ShouldBindUri(&uriParams)
+
+	bk, err := a.bookController.GetBook(ctx, uriParams.Id)
+	if err != nil {
+		return
+	}
+
+	a.SendResponse(ctx, bk)
 }
 
 func (a *App) CreateBook(ctx *gin.Context) {

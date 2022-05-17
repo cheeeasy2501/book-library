@@ -19,3 +19,7 @@ type GetBooksQuery struct {
 	Page  uint64 `form:"page" json:"page" binding:"required,gte=1"`
 	Limit uint64 `form:"limit" json:"limit" binding:"required,gte=1"`
 }
+
+type GetBookQuery struct {
+	Id uint64 `uri:"id" binding:"required"`
+}
