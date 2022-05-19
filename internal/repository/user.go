@@ -28,8 +28,9 @@ func NewUserRepository(db *nap.DB) *UserRepository {
 
 func (ur UserRepository) GetPage(ctx context.Context, page uint64, limit uint64) ([]model.User, error) {
 	var (
-		err   error
-		users []model.User
+		err      error
+		users    []model.User
+		password string
 	)
 
 	offset := limit * (page - 1)
@@ -51,12 +52,13 @@ func (ur UserRepository) GetPage(ctx context.Context, page uint64, limit uint64)
 	}
 
 	for rows.Next() {
-		usr := model.User{}
-		err = rows.Scan(&usr.Id, &usr.FirstName, &usr.LastName, &usr.Email, &usr.Password, &usr.CreatedAt, &usr.UpdatedAt)
+		user := model.User{}
+		err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &password, &user.CreatedAt, &user.UpdatedAt)
+		user.SetPassword(password)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, usr)
+		users = append(users, user)
 	}
 	err = rows.Close()
 	if err != nil {
@@ -68,8 +70,9 @@ func (ur UserRepository) GetPage(ctx context.Context, page uint64, limit uint64)
 }
 func (ur *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, error) {
 	var (
-		err error
-		usr *model.User
+		err      error
+		user     *model.User
+		password string
 	)
 	query, args, err := sq.Select("id, firstname, lastname, email, username, password, created_at, updated_at").
 		From(usersTableName).Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
@@ -83,23 +86,23 @@ func (ur *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, 
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(args...).Scan(&usr.Id, &usr.FirstName, &usr.LastName, &usr.Email, &usr.Password, &usr.CreatedAt, &usr.UpdatedAt)
+	err = stmt.QueryRow(args...).Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
-
 	if err == sql.ErrNoRows {
 		return nil, apperrors.UserNotFound
 	}
+	user.SetPassword(password)
 
-	return usr, nil
+	return user, nil
 }
 
-func (ur *UserRepository) Create(ctx context.Context, usr *model.User) error {
+func (ur *UserRepository) Create(ctx context.Context, user *model.User) error {
 	var id int64
 	currentDateTime := time.Now().Format(time.RFC3339)
 	query, args, err := sq.Insert(usersTableName).Columns("firstname", "lastname", "email", "username", "password", "created_at", "updated_at").
-		Values(usr.FirstName, usr.LastName, usr.Email, usr.UserName, usr.Password, currentDateTime, currentDateTime).
+		Values(user.FirstName, user.LastName, user.Email, user.UserName, user.Password(), currentDateTime, currentDateTime).
 		Suffix(`RETURNING "id"`).PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return err
@@ -115,7 +118,9 @@ func (ur *UserRepository) Create(ctx context.Context, usr *model.User) error {
 	if err != nil {
 		return err
 	}
-	usr.Id = id
+	user.Id = id
+	user.CreatedAt = currentDateTime
+	user.UpdatedAt = currentDateTime
 
 	return nil
 }
@@ -172,15 +177,16 @@ func (ur *UserRepository) Delete(ctx context.Context, id uint64) error {
 }
 
 // FindByUsername
-func (ur *UserRepository) FindByUsername(ctx context.Context, username string) (*model.User, error) {
+func (ur *UserRepository) FindByUserName(ctx context.Context, username string) (*model.User, error) {
 	var (
-		err error
-		usr *model.User
+		err      error
+		password string
 	)
-	if strings.TrimSpace(username) == "" {
-		return nil, apperrors.ValidateError("Username is empty!")
-	}
 
+	if strings.TrimSpace(username) == "" {
+		return nil, apperrors.EmptyUserName
+	}
+	user := &model.User{}
 	users := sq.Select("id, firstname, lastname, email, username, password, created_at, updated_at").From(usersTableName)
 	query, args, err := users.Where(sq.Eq{"username": username}).PlaceholderFormat(sq.Dollar).ToSql()
 	stmt, err := ur.db.PrepareContext(ctx, query)
@@ -190,24 +196,25 @@ func (ur *UserRepository) FindByUsername(ctx context.Context, username string) (
 	defer stmt.Close()
 
 	row := stmt.QueryRow(args...)
-	err = row.Scan(&usr.Id, &usr.FirstName, &usr.LastName, &usr.Email, &usr.UserName, &usr.Password, &usr.CreatedAt, &usr.UpdatedAt)
+	err = row.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.UserName, &password, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
+	user.SetPassword(password)
 
-	return usr, err
+	return user, err
 }
 
 // CheckSignIn Check user and password into database
-func (ur *UserRepository) CheckSignIn(ctx context.Context, usr *model.User) (*model.User, error) {
-	find, err := ur.FindByUsername(ctx, usr.UserName)
+func (ur *UserRepository) CheckSignIn(ctx context.Context, credentials *model.Credentials) (*model.User, error) {
+	find, err := ur.FindByUserName(ctx, credentials.UserName)
 	if err != nil {
 		return nil, err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(find.Password), []byte(usr.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(find.Password()), []byte(credentials.Password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, apperrors.Unauthorized("Unauthorized user!")
+			return nil, apperrors.UserIsNotAuthorize
 		}
 
 		return nil, err

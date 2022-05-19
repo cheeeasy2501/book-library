@@ -12,8 +12,8 @@ type UserRepoInterface interface {
 	Create(ctx context.Context, usr *model.User) error
 	Update(ctx context.Context, usr *model.User) error
 	Delete(ctx context.Context, id uint64) error
-	FindByUsername(cxt context.Context, username string) (*model.User, error)
-	CheckSignIn(context.Context, *model.User) (*model.User, error)
+	FindByUserName(cxt context.Context, username string) (*model.User, error)
+	CheckSignIn(context.Context, *model.Credentials) (*model.User, error)
 }
 
 type BookRepoInterface interface {

@@ -13,3 +13,8 @@ func NewAuthorization(cnf *config.AuthConfig) *Authorization {
 		Config: cnf,
 	}
 }
+
+type Credentials struct {
+	UserName string `json:"userName"`
+	Password string `json:"password"`
+}

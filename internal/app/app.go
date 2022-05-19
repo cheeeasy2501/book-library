@@ -90,8 +90,9 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	case apperrors.Unauthorized:
 		code, message = http.StatusUnauthorized, value.Error()
 	default:
-		code, message = http.StatusInternalServerError, value.Error()
+		code, message = http.StatusBadRequest, value.Error()
 	}
 
 	ctx.JSON(code, HTTPError{Message: message})
+	ctx.Abort()
 }
