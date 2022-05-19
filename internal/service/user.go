@@ -16,20 +16,45 @@ func NewUserService(repo repository.UserRepoInterface) *UserService {
 	}
 }
 
-func (us *UserService) Create(ctx context.Context, user model.User) (uint64, error) {
-	return 0, nil
-}
-func (us *UserService) GetAll(ctx context.Context) ([]model.User, error) {
-	var users []model.User
+func (us *UserService) GetAll(ctx context.Context, params model.PaginationParams) ([]model.User, error) {
+	users, err := us.repo.GetPage(ctx, params.Page, params.Limit)
+	if err != nil {
+		return nil, err
+	}
+
 	return users, nil
 }
-func (us *UserService) GetById(ctx context.Context, userId uint64) (model.User, error) {
-	var user model.User
+
+func (us *UserService) GetById(ctx context.Context, userId uint64) (*model.User, error) {
+	user, err := us.repo.GetById(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
 	return user, nil
 }
-func (us *UserService) Delete(ctx context.Context, userId uint64) error {
+
+func (us *UserService) Create(ctx context.Context, user *model.User) error {
+	err := us.repo.Create(ctx, user)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
-func (us *UserService) Update(ctx context.Context, userId uint64) error {
+
+func (us *UserService) Update(ctx context.Context, user *model.User) error {
+	err := us.repo.Update(ctx, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (us *UserService) Delete(ctx context.Context, userId uint64) error {
+	err := us.repo.Delete(ctx, userId)
+	if err != nil {
+		return err
+	}
 	return nil
 }

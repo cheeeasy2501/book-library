@@ -16,6 +16,7 @@ func NewBookService(repo repository.BookRepoInterface) *BookService {
 		repo: repo,
 	}
 }
+
 func (bs *BookService) Create(ctx context.Context, book *model.Book) error {
 	currentTime := time.Now()
 	book.CreatedAt = currentTime
@@ -26,9 +27,9 @@ func (bs *BookService) Create(ctx context.Context, book *model.Book) error {
 	}
 	return nil
 }
-func (bs *BookService) GetAll(ctx context.Context, query model.GetBooksParams) ([]model.Book, error) {
+func (bs *BookService) GetAll(ctx context.Context, params model.PaginationParams) ([]model.Book, error) {
 	var books []model.Book
-	books, err := bs.repo.GetByPage(ctx, query.Page, query.Limit)
+	books, err := bs.repo.GetPage(ctx, params.Page, params.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -54,5 +55,9 @@ func (bs *BookService) Update(ctx context.Context, book *model.Book) error {
 }
 
 func (bs *BookService) Delete(ctx context.Context, bookId uint64) error {
+	err := bs.repo.Delete(ctx, bookId)
+	if err != nil {
+		return err
+	}
 	return nil
 }

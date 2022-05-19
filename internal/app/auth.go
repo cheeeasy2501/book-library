@@ -66,6 +66,7 @@ func (a *App) ValidateTokenMiddleware(ctx *gin.Context) {
 	)
 	defer func() {
 		a.SendError(ctx, err)
+		ctx.Abort()
 	}()
 
 	header := ctx.GetHeader(authorizationHeader)

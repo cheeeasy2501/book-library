@@ -15,17 +15,17 @@ type AuthorizationServiceInterface interface {
 }
 
 type UserServiceInterface interface {
-	Create(ctx context.Context, user model.User) (uint64, error)
-	GetAll(ctx context.Context) ([]model.User, error)
-	GetById(ctx context.Context, userId uint64) (model.User, error)
+	GetAll(ctx context.Context, params model.PaginationParams) ([]model.User, error)
+	GetById(ctx context.Context, userId uint64) (*model.User, error)
+	Create(ctx context.Context, user *model.User) error
+	Update(ctx context.Context, user *model.User) error
 	Delete(ctx context.Context, userId uint64) error
-	Update(ctx context.Context, userId uint64) error
 }
 
 type BookServiceInterface interface {
-	Create(ctx context.Context, book *model.Book) error
-	GetAll(ctx context.Context, query model.GetBooksParams) ([]model.Book, error)
+	GetAll(ctx context.Context, params model.PaginationParams) ([]model.Book, error)
 	GetById(ctx context.Context, bookId uint64) (*model.Book, error)
+	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error
 	Delete(ctx context.Context, bookId uint64) error
 }

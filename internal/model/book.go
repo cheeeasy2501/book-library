@@ -7,8 +7,8 @@ import (
 )
 
 type Book struct {
-	ID          uint64    `json:"id"`
-	AuthorID    *int64    `json:"authorId"`
+	Id          uint64    `json:"id"`
+	AuthorId    *int64    `json:"authorId"`
 	Title       string    `json:"title" binding:"required"`
 	Description string    `json:"description"`
 	Link        string    `json:"link"`
@@ -48,11 +48,6 @@ func (b *Book) UpdateMap() (map[string]interface{}, error) {
 	delete(m, "createdAt")
 
 	return m, err
-}
-
-type GetBooksParams struct {
-	Page  uint64 `form:"page" json:"page" binding:"required,gte=1"`
-	Limit uint64 `form:"limit" json:"limit" binding:"required,gte=1"`
 }
 
 type GetBookParams struct {

@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
-	e "github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"github.com/golang-jwt/jwt/v4"
@@ -42,12 +42,12 @@ func (auth *AuthorizationService) GenerateToken(usr *model.User) (string, error)
 func (auth *AuthorizationService) ParseToken(accessToken string) (int64, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, e.Unauthorized("Invalid signing method")
+			return nil, apperrors.InvalidSigningMethod
 		}
 		return []byte(auth.secretKey), nil
 	})
 	if err != nil {
-		return 0, e.Unauthorized(err.Error())
+		return 0, apperrors.Unauthorized(err.Error())
 	}
 
 	claims, ok := token.Claims.(*Claims)

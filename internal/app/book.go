@@ -16,8 +16,8 @@ func (a *App) GetBooks(ctx *gin.Context) {
 	defer func() {
 		a.SendError(ctx, err)
 	}()
-	params := model.GetBooksParams{}
-	err = ctx.ShouldBindQuery(&params)
+	params := model.PaginationParams{}
+	err = ctx.BindQuery(&params)
 	if err != nil {
 		err = apperrors.ValidateError(err.Error())
 		return
@@ -40,7 +40,7 @@ func (a *App) GetBook(ctx *gin.Context) {
 	}()
 
 	uriParams := model.GetBookParams{}
-	err = ctx.ShouldBindUri(&uriParams)
+	err = ctx.BindUri(&uriParams)
 	bk, err := a.service.Book.GetById(ctx, uriParams.Id)
 	if err != nil {
 		return
@@ -91,7 +91,7 @@ func (a *App) UpdateBook(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	book.ID = id
+	book.Id = id
 	book.UpdatedAt = time.Now()
 
 	err = a.service.Book.Update(ctx, book)
@@ -103,5 +103,24 @@ func (a *App) UpdateBook(ctx *gin.Context) {
 }
 
 func (a *App) DeleteBook(ctx *gin.Context) {
+	var (
+		err error
+		id  uint64
+	)
 
+	defer func() {
+		a.SendError(ctx, err)
+	}()
+
+	id, err = strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		return
+	}
+
+	err = a.service.Book.Delete(ctx, id)
+	if err != nil {
+		return
+	}
+
+	a.SendResponse(ctx, nil)
 }
