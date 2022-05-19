@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
 )
@@ -21,13 +22,14 @@ func NewBookRepository(db *nap.DB) *BookRepository {
 	return &BookRepository{db: db}
 }
 
-func (br *BookRepository) GetPage(ctx context.Context, page uint64, limit uint64) ([]model.Book, error) {
+func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination) ([]model.Book, error) {
 	var (
 		err   error
 		books []model.Book
 	)
-	offset := limit * (page - 1)
-	query, args, err := sq.Select("id, author_id, title, description, link, in_stock, created_at, updated_at").From(bookTableName).Limit(limit).Offset(offset).
+	offset := paginator.Limit * (paginator.Page - 1)
+	query, args, err := sq.Select("id, title, description, link, in_stock, created_at, updated_at").
+		From(bookTableName).Limit(paginator.Limit).Offset(offset).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, err
@@ -45,7 +47,7 @@ func (br *BookRepository) GetPage(ctx context.Context, page uint64, limit uint64
 
 	for rows.Next() {
 		book := model.Book{}
-		err = rows.Scan(&book.Id, &book.AuthorId, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt)
+		err = rows.Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +64,8 @@ func (br *BookRepository) GetPage(ctx context.Context, page uint64, limit uint64
 
 func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, error) {
 	var book model.Book
-	query, args, err := sq.Select("id, author_id, title, description, link, in_stock, created_at, updated_at").From(bookTableName).Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, args, err := sq.Select("id, title, description, link, in_stock, created_at, updated_at").
+		From(bookTableName).Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +76,7 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(args...).Scan(&book.Id, &book.AuthorId, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt)
+	err = stmt.QueryRow(args...).Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
@@ -86,13 +89,8 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 }
 
 func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
-	err := book.Validate()
-	if err != nil {
-		return err
-	}
-
-	query, args, err := sq.Insert(bookTableName).Columns("author_id, title, description, link, in_stock, created_at, updated_at").
-		Values(book.AuthorId, book.Title, book.Description, book.Link, book.InStock, book.CreatedAt, book.UpdatedAt).PlaceholderFormat(sq.Dollar).
+	query, args, err := sq.Insert(bookTableName).Columns("title, description, link, in_stock, created_at, updated_at").
+		Values(book.Title, book.Description, book.Link, book.InStock, book.CreatedAt, book.UpdatedAt).PlaceholderFormat(sq.Dollar).
 		Suffix("RETURNING id, created_at, updated_at").ToSql()
 	if err != nil {
 		return err
@@ -112,8 +110,8 @@ func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 }
 
 func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
-	query, args, err := sq.Update(bookTableName).Set("author_id", book.AuthorId).
-		Set("title", book.Title).Set("description", book.Description).Set("link", book.Link).
+	query, args, err := sq.Update(bookTableName).Set("title", book.Title).
+		Set("description", book.Description).Set("link", book.Link).
 		Set("updated_at", book.UpdatedAt).PlaceholderFormat(sq.Dollar).Suffix("RETURNING created_at").
 		Where(sq.Eq{"id": book.Id}).ToSql()
 	if err != nil {

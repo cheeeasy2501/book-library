@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"time"
@@ -27,9 +28,9 @@ func (bs *BookService) Create(ctx context.Context, book *model.Book) error {
 	}
 	return nil
 }
-func (bs *BookService) GetAll(ctx context.Context, params model.PaginationParams) ([]model.Book, error) {
+func (bs *BookService) GetAll(ctx context.Context, paginator forms.PaginationForm) ([]model.Book, error) {
 	var books []model.Book
-	books, err := bs.repo.GetPage(ctx, params.Page, params.Limit)
+	books, err := bs.repo.GetPage(ctx, paginator)
 	if err != nil {
 		return nil, err
 	}

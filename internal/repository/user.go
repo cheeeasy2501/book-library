@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
 	"golang.org/x/crypto/bcrypt"
@@ -26,16 +27,16 @@ func NewUserRepository(db *nap.DB) *UserRepository {
 	}
 }
 
-func (ur UserRepository) GetPage(ctx context.Context, page uint64, limit uint64) ([]model.User, error) {
+func (ur UserRepository) GetPage(ctx context.Context, paginator forms.Pagination) ([]model.User, error) {
 	var (
 		err      error
 		users    []model.User
 		password string
 	)
 
-	offset := limit * (page - 1)
+	offset := paginator.Limit * (paginator.Page - 1)
 	query, args, err := sq.Select("id, firstname, lastname, email, username, password, created_at, updated_at").
-		From(usersTableName).Limit(limit).Offset(offset).
+		From(usersTableName).Limit(paginator.Limit).Offset(offset).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, err
@@ -176,7 +177,7 @@ func (ur *UserRepository) Delete(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// FindByUsername
+// FindByUserName FindByUsername
 func (ur *UserRepository) FindByUserName(ctx context.Context, username string) (*model.User, error) {
 	var (
 		err      error
@@ -206,7 +207,7 @@ func (ur *UserRepository) FindByUserName(ctx context.Context, username string) (
 }
 
 // CheckSignIn Check user and password into database
-func (ur *UserRepository) CheckSignIn(ctx context.Context, credentials *model.Credentials) (*model.User, error) {
+func (ur *UserRepository) CheckSignIn(ctx context.Context, credentials *forms.Credentials) (*model.User, error) {
 	find, err := ur.FindByUserName(ctx, credentials.UserName)
 	if err != nil {
 		return nil, err

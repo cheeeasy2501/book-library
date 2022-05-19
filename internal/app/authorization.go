@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -14,7 +15,7 @@ const (
 func (a *App) SignInHandler(ctx *gin.Context) {
 	var (
 		err         error
-		credentials *model.Credentials
+		credentials *forms.Credentials
 	)
 	defer func() {
 		a.SendError(ctx, err)

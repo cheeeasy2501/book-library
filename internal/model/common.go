@@ -6,13 +6,13 @@ import (
 )
 
 type Model struct {
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt time.Time `json:"createdAt" binding:"datetime"`
+	UpdatedAt time.Time `json:"updatedAt" binding:"datetime"`
 }
 
-func (b *Model) ToMap() (map[string]interface{}, error) {
+func (model *Model) ToMap() (map[string]interface{}, error) {
 	var m map[string]interface{}
-	buf, err := json.Marshal(b)
+	buf, err := json.Marshal(model)
 	if err != nil {
 		return nil, err
 	}
@@ -22,9 +22,4 @@ func (b *Model) ToMap() (map[string]interface{}, error) {
 	}
 
 	return m, err
-}
-
-type PaginationParams struct {
-	Page  uint64 `form:"page" json:"page" binding:"required,gte=1"`
-	Limit uint64 `form:"limit" json:"limit" binding:"required,gte=1"`
 }

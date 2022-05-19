@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 )
@@ -16,8 +17,8 @@ func NewUserService(repo repository.UserRepoInterface) *UserService {
 	}
 }
 
-func (us *UserService) GetAll(ctx context.Context, params model.PaginationParams) ([]model.User, error) {
-	users, err := us.repo.GetPage(ctx, params.Page, params.Limit)
+func (us *UserService) GetAll(ctx context.Context, paginator forms.PaginationForm) ([]model.User, error) {
+	users, err := us.repo.GetPage(ctx, paginator)
 	if err != nil {
 		return nil, err
 	}

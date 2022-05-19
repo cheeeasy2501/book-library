@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -16,13 +17,14 @@ func (a *App) GetBooks(ctx *gin.Context) {
 	defer func() {
 		a.SendError(ctx, err)
 	}()
-	params := model.PaginationParams{}
-	err = ctx.BindQuery(&params)
+
+	form := forms.Pagination{}
+	err = ctx.BindQuery(&form)
 	if err != nil {
 		err = apperrors.ValidateError(err.Error())
 		return
 	}
-	books, err := a.service.Book.GetAll(ctx, params)
+	books, err := a.service.Book.GetAll(ctx, form)
 	if err != nil {
 		return
 	}
@@ -39,9 +41,9 @@ func (a *App) GetBook(ctx *gin.Context) {
 		a.SendError(ctx, err)
 	}()
 
-	uriParams := model.GetBookParams{}
-	err = ctx.BindUri(&uriParams)
-	bk, err := a.service.Book.GetById(ctx, uriParams.Id)
+	form := forms.GetBook{}
+	err = ctx.BindUri(&form)
+	bk, err := a.service.Book.GetById(ctx, form.Id)
 	if err != nil {
 		return
 	}
