@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/cheeeasy2501/book-library/internal/book"
-	"github.com/cheeeasy2501/book-library/internal/errors"
+	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,14 +14,13 @@ func (a *App) GetBooks(ctx *gin.Context) {
 	defer func() {
 		a.SendError(ctx, err)
 	}()
-	queryParams := book.GetBooksQuery{}
-	err = ctx.ShouldBindQuery(&queryParams)
+	params := model.GetBooksParams{}
+	err = ctx.ShouldBindQuery(&params)
 	if err != nil {
-		err = errors.ValidateError(err.Error())
+		err = apperrors.ValidateError(err.Error())
 		return
 	}
-
-	books, err := a.bookController.GetBooks(ctx, queryParams.Page, queryParams.Limit)
+	books, err := a.service.Book.GetAll(ctx, params)
 	if err != nil {
 		return
 	}
@@ -38,10 +37,9 @@ func (a *App) GetBook(ctx *gin.Context) {
 		a.SendError(ctx, err)
 	}()
 
-	uriParams := book.GetBookQuery{}
+	uriParams := model.GetBookParams{}
 	err = ctx.ShouldBindUri(&uriParams)
-
-	bk, err := a.bookController.GetBook(ctx, uriParams.Id)
+	bk, err := a.service.Book.GetById(ctx, uriParams.Id)
 	if err != nil {
 		return
 	}
@@ -50,7 +48,26 @@ func (a *App) GetBook(ctx *gin.Context) {
 }
 
 func (a *App) CreateBook(ctx *gin.Context) {
+	var (
+		err  error
+		book *model.Book
+	)
 
+	defer func() {
+		a.SendError(ctx, err)
+	}()
+
+	err = ctx.BindJSON(&book)
+	if err != nil {
+		return
+	}
+
+	err = a.service.Book.Create(ctx, book)
+	if err != nil {
+		return
+	}
+
+	a.SendResponse(ctx, book)
 }
 
 func (a *App) UpdateBook(ctx *gin.Context) {

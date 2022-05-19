@@ -7,42 +7,32 @@ import (
 	"time"
 )
 
-var Instance *Database
+type Database struct{}
 
-type Database struct {
-	Conn *nap.DB
-}
-
-func SetNewDatabaseInstance() {
-	Instance = &Database{}
-}
-
-func (db *Database) OpenConnection(config *config.Config) error {
-	//TODO: config is empty!
-	connectionString, err := config.GetConnectionString()
+func NewDatabaseConnection(cnf *config.DatabaseConfig) (*nap.DB, error) {
+	db := &Database{}
+	connection, err := db.OpenConnection(cnf)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	//TODO: check how set multiple connections :range by map
-	connection, err := nap.Open(config.Database.Driver, connectionString)
+
+	return connection, nil
+}
+func (db *Database) OpenConnection(cnf *config.DatabaseConfig) (*nap.DB, error) {
+	connectionString, err := cnf.GetConnectionString()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	connection.SetMaxOpenConns(int(config.Database.MaxOpenConnectionLifetime * time.Minute))
-	connection.SetMaxIdleConns(int(config.Database.MaxOpenIdleConnectionLifetime * time.Minute))
+	connection, err := nap.Open(cnf.Driver, connectionString)
+	if err != nil {
+		return nil, err
+	}
+	connection.SetMaxOpenConns(int(cnf.MaxOpenConnectionLifetime * time.Minute))
+	connection.SetMaxIdleConns(int(cnf.MaxOpenIdleConnectionLifetime * time.Minute))
 	err = connection.Ping()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	Instance.Conn = connection
-
-	return nil
-}
-
-func (db *Database) CloseConnection() {
-	err := Instance.Conn.Close()
-	if err != nil {
-		return
-	}
+	return connection, nil
 }

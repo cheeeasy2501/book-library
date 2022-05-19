@@ -1,10 +1,6 @@
-package errors
+package apperrors
 
 import "fmt"
-
-const (
-	ConfigDatabaseNotFound = ConfigDatabaseError("Item in database config map not found!")
-)
 
 type ConfigDatabaseError string
 
