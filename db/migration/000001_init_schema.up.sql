@@ -9,7 +9,7 @@ CREATE TABLE users
     Created_At timestamp with time zone,
     Updated_At timestamp with time zone
 );
-
+AT
 CREATE TABLE author
 (
     Id         SERIAL PRIMARY KEY,

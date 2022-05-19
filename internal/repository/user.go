@@ -100,7 +100,7 @@ func (ur *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, 
 
 func (ur *UserRepository) Create(ctx context.Context, user *model.User) error {
 	var id int64
-	currentDateTime := time.Now().Format(time.RFC3339)
+	currentDateTime := time.Now()
 	query, args, err := sq.Insert(usersTableName).Columns("firstname", "lastname", "email", "username", "password", "created_at", "updated_at").
 		Values(user.FirstName, user.LastName, user.Email, user.UserName, user.Password(), currentDateTime, currentDateTime).
 		Suffix(`RETURNING "id"`).PlaceholderFormat(sq.Dollar).ToSql()
