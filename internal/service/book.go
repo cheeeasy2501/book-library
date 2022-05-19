@@ -28,7 +28,7 @@ func (bs *BookService) Create(ctx context.Context, book *model.Book) error {
 	}
 	return nil
 }
-func (bs *BookService) GetAll(ctx context.Context, paginator forms.PaginationForm) ([]model.Book, error) {
+func (bs *BookService) GetAll(ctx context.Context, paginator forms.Pagination) ([]model.Book, error) {
 	var books []model.Book
 	books, err := bs.repo.GetPage(ctx, paginator)
 	if err != nil {

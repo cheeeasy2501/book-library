@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"github.com/golang-jwt/jwt/v4"
@@ -63,7 +64,7 @@ func (auth *AuthorizationService) HashPassword(password string) (string, error) 
 	return string(bytes), err
 }
 
-func (auth *AuthorizationService) SignIn(ctx context.Context, credentials *model.Credentials) (*model.User, string, error) {
+func (auth *AuthorizationService) SignIn(ctx context.Context, credentials *forms.Credentials) (*model.User, string, error) {
 	usr, err := auth.repo.CheckSignIn(ctx, credentials)
 	if err != nil {
 		return nil, "", err

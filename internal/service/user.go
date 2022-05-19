@@ -17,7 +17,7 @@ func NewUserService(repo repository.UserRepoInterface) *UserService {
 	}
 }
 
-func (us *UserService) GetAll(ctx context.Context, paginator forms.PaginationForm) ([]model.User, error) {
+func (us *UserService) GetAll(ctx context.Context, paginator forms.Pagination) ([]model.User, error) {
 	users, err := us.repo.GetPage(ctx, paginator)
 	if err != nil {
 		return nil, err
