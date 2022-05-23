@@ -24,7 +24,7 @@ type UserServiceInterface interface {
 }
 
 type BookServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination) ([]model.Book, error)
+	GetAll(ctx context.Context, params forms.Pagination, relationships model.Relationships) ([]model.Book, error)
 	GetById(ctx context.Context, bookId uint64) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error

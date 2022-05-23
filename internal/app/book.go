@@ -24,7 +24,14 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		err = apperrors.ValidateError(err.Error())
 		return
 	}
-	books, err := a.service.Book.GetAll(ctx, form)
+
+	relations := model.Relationships{}
+	err = ctx.BindQuery(&relations)
+	if err != nil {
+		return
+	}
+
+	books, err := a.service.Book.GetAll(ctx, form, relations)
 	if err != nil {
 		return
 	}

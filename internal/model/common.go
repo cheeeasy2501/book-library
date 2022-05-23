@@ -6,8 +6,8 @@ import (
 )
 
 type Model struct {
-	CreatedAt time.Time `json:"createdAt" binding:"datetime"`
-	UpdatedAt time.Time `json:"updatedAt" binding:"datetime"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (model *Model) ToMap() (map[string]interface{}, error) {
