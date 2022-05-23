@@ -9,7 +9,6 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
 	"golang.org/x/crypto/bcrypt"
-	"strings"
 	"time"
 )
 
@@ -184,9 +183,6 @@ func (ur *UserRepository) FindByUserName(ctx context.Context, username string) (
 		password string
 	)
 
-	if strings.TrimSpace(username) == "" {
-		return nil, apperrors.EmptyUserName
-	}
 	user := &model.User{}
 	users := sq.Select("id, firstname, lastname, email, username, password, created_at, updated_at").From(usersTableName)
 	query, args, err := users.Where(sq.Eq{"username": username}).PlaceholderFormat(sq.Dollar).ToSql()
@@ -212,10 +208,12 @@ func (ur *UserRepository) CheckSignIn(ctx context.Context, credentials *forms.Cr
 	if err != nil {
 		return nil, err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(find.Password()), []byte(credentials.Password))
+	//TODO: check password
+	str := find.Password()
+	err = bcrypt.CompareHashAndPassword([]byte(str), []byte(credentials.Password))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return nil, apperrors.UserIsNotAuthorize
+			return nil, apperrors.InvalidCredentionals
 		}
 
 		return nil, err

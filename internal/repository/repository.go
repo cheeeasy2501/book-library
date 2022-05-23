@@ -18,22 +18,33 @@ type UserRepoInterface interface {
 }
 
 type BookRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination) ([]model.Book, error)
+	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Book, error)
 	GetById(ctx context.Context, id uint64) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error
 	Delete(ctx context.Context, id uint64) error
 }
 
+type AuthorRepoInterface interface {
+	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Author, error)
+	GetById(ctx context.Context, id uint64) (*model.Author, error)
+	Create(ctx context.Context, book *model.Author) error
+	Update(ctx context.Context, book *model.Author) error
+	Delete(ctx context.Context, id uint64) error
+	GetBookRelations(ctx context.Context, books []model.Book) ([]model.Book, error)
+}
+
 // TODO add all interfaces for repo there
 type Repository struct {
-	Book BookRepoInterface
-	User UserRepoInterface
+	Book   BookRepoInterface
+	Author AuthorRepoInterface
+	User   UserRepoInterface
 }
 
 func NewRepository(db *nap.DB) *Repository {
 	return &Repository{
-		Book: NewBookRepository(db),
-		User: NewUserRepository(db),
+		User:   NewUserRepository(db),
+		Book:   NewBookRepository(db),
+		Author: NewAuthorRepository(db),
 	}
 }

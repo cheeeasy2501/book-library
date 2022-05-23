@@ -5,7 +5,8 @@ const (
 )
 
 const (
-	UserIsNotAuthorize = Unauthorized("Unauthorized user!")
+	UserIsNotAuthorize   = Unauthorized("Unauthorized user!")
+	InvalidCredentionals = Unauthorized("Invalid username or password!")
 )
 
 const (

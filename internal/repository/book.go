@@ -22,7 +22,7 @@ func NewBookRepository(db *nap.DB) *BookRepository {
 	return &BookRepository{db: db}
 }
 
-func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination) ([]model.Book, error) {
+func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Book, error) {
 	var (
 		err   error
 		books []model.Book

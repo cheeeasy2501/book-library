@@ -1,17 +1,17 @@
-package model
+package forms
 
 import (
 	"bytes"
+	"golang.org/x/exp/slices"
 	"strings"
 )
 
-const (
-	BookAuthorRelation = Relation("author")
-)
-
 type (
-	Relation  string
-	Relations []Relation
+	Relation      string
+	Relations     []Relation
+	Relationships struct {
+		Relations
+	}
 )
 
 func (r *Relations) UnmarshalJSON(data []byte) error {
@@ -44,19 +44,22 @@ func (r Relations) MarshalJSON() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-type Relationships struct {
-	Relations Relations `json:"relations" form:"relations"`
+const (
+	Author Relation = Relation("author")
+	Test   Relation = Relation("test")
+)
+
+func (r Relation) String() string {
+	return r.String()
 }
 
-type BooksRelationships struct {
-	Relationships
-}
-
-func (b BooksRelationships) LoadAndValidate() {
-	for index, value := range b.Relations {
-		if value != BookAuthorRelation {
-			b.Relations = append(b.Relations[:index], b.Relations[index+1:]...)
+func (r Relationships) BookRelations() []Relation {
+	relations := []Relation{Author, Test}
+	for index, value := range r.Relations {
+		if !slices.Contains(relations, value) {
+			relations = append(relations[:index], relations[index+1:]...)
 		}
 	}
 
+	return relations
 }

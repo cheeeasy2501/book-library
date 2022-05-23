@@ -6,13 +6,14 @@ import (
 )
 
 type Model struct {
+	Id        uint64    `json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-func (model *Model) ToMap() (map[string]interface{}, error) {
-	var m map[string]interface{}
-	buf, err := json.Marshal(model)
+func (m *Model) ToMap() (map[string]interface{}, error) {
+	var mp map[string]interface{}
+	buf, err := json.Marshal(m)
 	if err != nil {
 		return nil, err
 	}
@@ -21,5 +22,5 @@ func (model *Model) ToMap() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	return m, err
+	return mp, err
 }

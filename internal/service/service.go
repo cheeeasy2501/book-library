@@ -24,7 +24,7 @@ type UserServiceInterface interface {
 }
 
 type BookServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relationships model.Relationships) ([]model.Book, error)
+	GetAll(ctx context.Context, params forms.Pagination, relationships forms.Relations) ([]model.Book, error)
 	GetById(ctx context.Context, bookId uint64) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error
@@ -40,7 +40,7 @@ type Service struct {
 func NewService(repos *repository.Repository) *Service {
 	return &Service{
 		Authorization: NewAuthorizationService(repos.User, "Secret"),
-		Book:          NewBookService(repos.Book),
+		Book:          NewBookService(repos.Book, repos.Author),
 		User:          NewUserService(repos.User),
 	}
 }

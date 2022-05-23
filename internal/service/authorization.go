@@ -60,7 +60,7 @@ func (auth *AuthorizationService) ParseToken(accessToken string) (int64, error) 
 }
 
 func (auth *AuthorizationService) HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14) //TODO: check password
 	return string(bytes), err
 }
 
