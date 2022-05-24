@@ -25,26 +25,32 @@ type BookRepoInterface interface {
 	Delete(ctx context.Context, id uint64) error
 }
 
+//TODO: CHECK IT
+type BookAggregateRepoInterface interface {
+	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
+}
+
 type AuthorRepoInterface interface {
 	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Author, error)
 	GetById(ctx context.Context, id uint64) (*model.Author, error)
 	Create(ctx context.Context, book *model.Author) error
 	Update(ctx context.Context, book *model.Author) error
 	Delete(ctx context.Context, id uint64) error
-	GetBookRelations(ctx context.Context, books []model.Book) ([]model.Book, error)
 }
 
 // TODO add all interfaces for repo there
 type Repository struct {
-	Book   BookRepoInterface
-	Author AuthorRepoInterface
-	User   UserRepoInterface
+	User          UserRepoInterface
+	Book          BookRepoInterface
+	BookAggregate BookAggregateRepoInterface
+	Author        AuthorRepoInterface
 }
 
 func NewRepository(db *nap.DB) *Repository {
 	return &Repository{
-		User:   NewUserRepository(db),
-		Book:   NewBookRepository(db),
-		Author: NewAuthorRepository(db),
+		User:          NewUserRepository(db),
+		Book:          NewBookRepository(db),
+		BookAggregate: NewBookAggregateRepository(db),
+		Author:        NewAuthorRepository(db),
 	}
 }

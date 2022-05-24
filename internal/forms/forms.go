@@ -12,3 +12,7 @@ type Pagination struct {
 func (pf *Pagination) LoadAndValidate() error {
 	return nil
 }
+
+func (pf Pagination) GetOffset() uint64 {
+	return (pf.Page - 1) * pf.Limit
+}

@@ -18,26 +18,35 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		a.SendError(ctx, err)
 	}()
 
-	form := forms.Pagination{}
-	err = ctx.BindQuery(&form)
+	paginateForm := forms.Pagination{}
+	err = ctx.BindQuery(&paginateForm)
 	if err != nil {
 		err = apperrors.ValidateError(err.Error())
 		return
 	}
 
-	formRelations := forms.Relationships{}
-	err = ctx.BindQuery(&formRelations)
+	rel := forms.Relationships{}
+	// TODO: Problem with bind relations
+	err = ctx.BindQuery(&rel)
 	if err != nil {
 		return
 	}
-	relations := formRelations.BookRelations()
-
-	books, err := a.service.Book.GetAll(ctx, form, relations)
-	if err != nil {
-		return
+	relations := rel.Relations.FilterRelations(forms.GetBookRelations())
+	// Mock!
+	relations = forms.GetBookRelations()
+	if len(relations) != 0 {
+		books, err := a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, books)
+	} else {
+		books, err := a.service.Book.GetAll(ctx, paginateForm, relations)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, books)
 	}
-
-	a.SendResponse(ctx, books)
 }
 
 func (a *App) GetBook(ctx *gin.Context) {

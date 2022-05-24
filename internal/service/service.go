@@ -31,16 +31,22 @@ type BookServiceInterface interface {
 	Delete(ctx context.Context, bookId uint64) error
 }
 
+type BookAggregateServiceInterface interface {
+	GetAll(ctx context.Context, params forms.Pagination, relationships forms.Relations) ([]model.BookAggregate, error)
+}
+
 type Service struct {
 	Authorization AuthorizationServiceInterface
-	Book          BookServiceInterface
 	User          UserServiceInterface
+	Book          BookServiceInterface
+	BookAggregate BookAggregateServiceInterface
 }
 
 func NewService(repos *repository.Repository) *Service {
 	return &Service{
 		Authorization: NewAuthorizationService(repos.User, "Secret"),
-		Book:          NewBookService(repos.Book, repos.Author),
 		User:          NewUserService(repos.User),
+		Book:          NewBookService(repos.Book),
+		BookAggregate: NewBookAggregateService(repos.BookAggregate),
 	}
 }

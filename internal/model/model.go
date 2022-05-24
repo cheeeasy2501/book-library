@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type TestMapper interface {
+	Columns() string
+	Fields() []interface{}
+}
+
 type Model struct {
 	Id        uint64    `json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
