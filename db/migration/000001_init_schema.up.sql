@@ -31,14 +31,14 @@ CREATE TABLE books
     Updated_At      timestamp with time zone
 );
 
-CREATE TABLE book_authors
+CREATE TABLE author_books
 (
     Id        serial primary key,
-    Book_Id   integer references books (Id) on delete cascade,
-    Author_Id integer references author (Id) on delete set null
+    Author_Id integer references author (Id) on delete set null,
+    Book_Id   integer references books (Id) on delete cascade
 );
 
-CREATE TABLE publish_house
+CREATE TABLE house_publishes
 (
     Id         SERIAL PRIMARY KEY,
     Name       VARCHAR(100),
