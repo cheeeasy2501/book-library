@@ -14,5 +14,5 @@ func (a *Book) Columns() string {
 }
 
 func (a *Book) Fields() []interface{} {
-	return []interface{}{&a.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, a.UpdatedAt}
+	return []interface{}{&a.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, &a.UpdatedAt}
 }

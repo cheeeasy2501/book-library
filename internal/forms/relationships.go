@@ -71,7 +71,8 @@ func (r Relations) MarshalJSON() ([]byte, error) {
 }
 
 const (
-	AuthorRel = Relation("authors")
+	AuthorRel       = Relation("authors")
+	PublishHouseRel = Relation("publish_house")
 )
 
 func (r *Relations) FilterRelations(relations []Relation) []Relation {
@@ -87,5 +88,5 @@ func (r *Relations) FilterRelations(relations []Relation) []Relation {
 
 // Relations
 func GetBookRelations() []Relation {
-	return []Relation{AuthorRel}
+	return []Relation{AuthorRel, PublishHouseRel}
 }
