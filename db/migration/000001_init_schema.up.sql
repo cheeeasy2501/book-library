@@ -1,10 +1,10 @@
 CREATE TABLE users
 (
-    Id         SERIAL PRIMARY KEY,
-    FirstName  VARCHAR(30) NULL,
-    LastName   VARCHAR(30) NULL,
-    Email      VARCHAR(30) UNIQUE NULL,
-    UserName   VARCHAR(50) UNIQUE,
+    Id         serial primary key,
+    FirstName  varchar(30) null,
+    LastName   varchar(30) null,
+    Email      varchar(30) unique null,
+    UserName   varchar(50) unique,
     Password   varchar(255),
     Created_At timestamp with time zone,
     Updated_At timestamp with time zone
@@ -12,26 +12,33 @@ CREATE TABLE users
 
 CREATE TABLE author
 (
-    Id         SERIAL PRIMARY KEY,
-    FirstName  VARCHAR(30),
-    LastName   VARCHAR(30),
+    Id         serial primary key,
+    FirstName  varchar(30),
+    LastName   varchar(30),
     Created_At timestamp with time zone,
     Updated_At timestamp with time zone
 );
 
 CREATE TABLE books
 (
-    Id          SERIAL PRIMARY KEY,
-    Author_Id   INTEGER REFERENCES author (Id) ON DELETE SET NULL,
-    Title       VARCHAR(30),
-    Description TEXT,
-    Link        VARCHAR(100),
-    In_Stock    SMALLINT CHECK (In_Stock >= 0),
-    Created_At  timestamp with time zone,
-    Updated_At  timestamp with time zone
+    Id              serial primary key,
+    PublishHouse_Id integer,
+    Title           varchar(30),
+    Description     text,
+    Link            varchar(100),
+    In_Stock        smallint check (In_Stock >= 0),
+    Created_At      timestamp with time zone,
+    Updated_At      timestamp with time zone
 );
 
-CREATE TABLE publish_house
+CREATE TABLE author_books
+(
+    Id        serial primary key,
+    Author_Id integer references author (Id) on delete set null,
+    Book_Id   integer references books (Id) on delete cascade
+);
+
+CREATE TABLE house_publishes
 (
     Id         SERIAL PRIMARY KEY,
     Name       VARCHAR(100),
@@ -41,11 +48,12 @@ CREATE TABLE publish_house
 
 CREATE TABLE booking
 (
-    Id         uuid PRIMARY KEY,
-    User_Id    integer REFERENCES users (id),
-    Book_Id    integer REFERENCES books (id),
-    Start_Date timestamp with time zone,
-    End_Time   timestamp with time zone,
-    Created_At timestamp with time zone,
-    Updated_At timestamp with time zone
+    Id             uuid PRIMARY KEY,
+    User_Id        integer REFERENCES users (id),
+    Book_Id        integer REFERENCES books (id),
+    Status         varchar(3),
+    Start_DateTime timestamp with time zone,
+    End_DateTime   timestamp with time zone,
+    Created_At     timestamp with time zone,
+    Updated_At     timestamp with time zone
 );

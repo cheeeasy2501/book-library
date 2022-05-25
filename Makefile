@@ -11,8 +11,5 @@ full_start:
 full_stop:
 	docker-compose stop
 
-migration_drop:
-	migrate -path ./db/migration -database 'postgres://postgres:postgres@localhost:5432/books-library?sslmode=disable' drop
-
-migration_up:
-	migrate -path ./db/migration -database 'postgres://postgres:postgres@localhost:5432/books-library?sslmode=disable' up
+migrate:
+	 migrate -path ./db/migration -database 'postgres://postgres:postgres@localhost:5432/books-library?sslmode=disable' $(c)

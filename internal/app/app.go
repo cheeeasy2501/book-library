@@ -51,8 +51,8 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 			books.GET("/", application.GetBooks)
 			books.GET("/:id", application.GetBook)
 			books.POST("/", application.CreateBook)
-			books.PATCH("/", application.UpdateBook)
-			books.DELETE("/", application.DeleteBook)
+			books.PATCH("/:id", application.UpdateBook)
+			books.DELETE("/:id", application.DeleteBook)
 		}
 	}
 
@@ -90,8 +90,9 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	case apperrors.Unauthorized:
 		code, message = http.StatusUnauthorized, value.Error()
 	default:
-		code, message = http.StatusInternalServerError, value.Error()
+		code, message = http.StatusBadRequest, value.Error()
 	}
 
 	ctx.JSON(code, HTTPError{Message: message})
+	ctx.Abort()
 }

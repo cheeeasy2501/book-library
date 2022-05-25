@@ -1,7 +1,8 @@
 package app
 
 import (
-	e "github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -13,25 +14,25 @@ const (
 
 func (a *App) SignInHandler(ctx *gin.Context) {
 	var (
-		usr *model.User
-		err error
+		err         error
+		credentials *forms.Credentials
 	)
 	defer func() {
 		a.SendError(ctx, err)
 	}()
 
-	err = ctx.BindJSON(&usr)
+	err = ctx.ShouldBindJSON(&credentials)
 	if err != nil {
 		return
 	}
-	usr, token, err := a.service.Authorization.SignIn(ctx, usr)
+	user, token, err := a.service.Authorization.SignIn(ctx, credentials)
 	if err != nil {
 		return
 	}
 
 	a.SendResponse(ctx, gin.H{
 		"token": token,
-		"user":  usr,
+		"user":  user,
 	})
 }
 
@@ -44,7 +45,7 @@ func (a *App) SignUpHandler(ctx *gin.Context) {
 		a.SendError(ctx, err)
 	}()
 
-	err = ctx.BindJSON(&usr)
+	err = ctx.ShouldBindJSON(&usr)
 	if err != nil {
 		return
 	}
@@ -70,13 +71,13 @@ func (a *App) ValidateTokenMiddleware(ctx *gin.Context) {
 
 	header := ctx.GetHeader(authorizationHeader)
 	if header == "" {
-		err = e.Unauthorized("Authorization header is empty")
+		err = apperrors.EmptyAuthorizationHeader
 		return
 	}
 
 	headerParts := strings.Split(header, " ")
 	if len(headerParts) != 2 {
-		err = e.Unauthorized("Authorization header is invalid")
+		err = apperrors.InvalidAuthorizationHeader
 		return
 	}
 	//parse token

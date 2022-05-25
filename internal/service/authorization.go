@@ -3,7 +3,8 @@ package service
 import (
 	"context"
 	"database/sql"
-	e "github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"github.com/golang-jwt/jwt/v4"
@@ -42,12 +43,12 @@ func (auth *AuthorizationService) GenerateToken(usr *model.User) (string, error)
 func (auth *AuthorizationService) ParseToken(accessToken string) (int64, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, e.Unauthorized("Invalid signing method")
+			return nil, apperrors.InvalidSigningMethod
 		}
 		return []byte(auth.secretKey), nil
 	})
 	if err != nil {
-		return 0, e.Unauthorized(err.Error())
+		return 0, apperrors.Unauthorized(err.Error())
 	}
 
 	claims, ok := token.Claims.(*Claims)
@@ -59,15 +60,19 @@ func (auth *AuthorizationService) ParseToken(accessToken string) (int64, error) 
 }
 
 func (auth *AuthorizationService) HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost) //TODO: check password
+	if err != nil {
+		return "", err
+	}
 	return string(bytes), err
 }
 
-func (auth *AuthorizationService) SignIn(ctx context.Context, usr *model.User) (*model.User, string, error) {
-	usr, err := auth.repo.CheckSignIn(ctx, usr)
+func (auth *AuthorizationService) SignIn(ctx context.Context, credentials *forms.Credentials) (*model.User, string, error) {
+	usr, err := auth.repo.CheckSignIn(ctx, credentials)
 	if err != nil {
 		return nil, "", err
 	}
+
 	token, err := auth.GenerateToken(usr)
 	if err != nil {
 		return nil, "", err
@@ -76,22 +81,22 @@ func (auth *AuthorizationService) SignIn(ctx context.Context, usr *model.User) (
 	return usr, token, nil
 }
 
-func (auth *AuthorizationService) SignUp(ctx context.Context, usr *model.User) (string, error) {
-	encryptedPass, err := auth.HashPassword(usr.Password)
+func (auth *AuthorizationService) SignUp(ctx context.Context, user *model.User) (string, error) {
+	encryptedPass, err := auth.HashPassword(user.Password())
 	if err != nil {
 		return "", err
 	}
-	usr.Password = encryptedPass
-	_, err = auth.repo.FindByUsername(ctx, usr.UserName)
 
+	user.SetPassword(encryptedPass)
+	_, err = auth.repo.FindByUserName(ctx, user.UserName)
 	if err != nil && err != sql.ErrNoRows {
 		return "", err
 	}
 
-	err = auth.repo.Create(ctx, usr)
+	err = auth.repo.Create(ctx, user)
 	if err != nil {
 		return "", err
 	}
 
-	return auth.GenerateToken(usr)
+	return auth.GenerateToken(user)
 }

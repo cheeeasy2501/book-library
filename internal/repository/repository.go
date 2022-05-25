@@ -2,35 +2,56 @@ package repository
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
-	"github.com/google/uuid"
 	"github.com/tsenart/nap"
 )
 
 type UserRepoInterface interface {
-	CheckSignIn(context.Context, *model.User) (*model.User, error)
-	Get(context.Context, *model.User)
-	FindByUsername(context.Context, string) (*model.User, error)
+	GetPage(ctx context.Context, paginator forms.Pagination) ([]model.User, error)
+	GetById(ctx context.Context, id uint64) (*model.User, error)
 	Create(ctx context.Context, usr *model.User) error
+	Update(ctx context.Context, usr *model.User) error
+	Delete(ctx context.Context, id uint64) error
+	FindByUserName(cxt context.Context, username string) (*model.User, error)
+	CheckSignIn(context.Context, *forms.Credentials) (*model.User, error)
 }
 
 type BookRepoInterface interface {
+	GetPage(ctx context.Context, paginator forms.Pagination) ([]model.Book, error)
 	GetById(ctx context.Context, id uint64) (*model.Book, error)
-	GetByPage(ctx context.Context, page uint64, limit uint64) ([]model.Book, error)
-	Create(ctx context.Context, book *model.Book) (*model.Book, error)
-	Update(book *model.Book) (*model.Book, error)
-	Delete(id uuid.UUID) error
+	Create(ctx context.Context, book *model.Book) error
+	Update(ctx context.Context, book *model.Book) error
+	Delete(ctx context.Context, id uint64) error
+}
+
+//TODO: CHECK IT
+type BookAggregateRepoInterface interface {
+	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
+	GetById(ctx context.Context, id uint64, relations forms.Relations) (*model.BookAggregate, error)
+}
+
+type AuthorRepoInterface interface {
+	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Author, error)
+	GetById(ctx context.Context, id uint64) (*model.Author, error)
+	Create(ctx context.Context, book *model.Author) error
+	Update(ctx context.Context, book *model.Author) error
+	Delete(ctx context.Context, id uint64) error
 }
 
 // TODO add all interfaces for repo there
 type Repository struct {
-	Book BookRepoInterface
-	User UserRepoInterface
+	User          UserRepoInterface
+	Book          BookRepoInterface
+	BookAggregate BookAggregateRepoInterface
+	Author        AuthorRepoInterface
 }
 
 func NewRepository(db *nap.DB) *Repository {
 	return &Repository{
-		Book: NewBookRepository(db),
-		User: NewUserRepository(db),
+		User:          NewUserRepository(db),
+		Book:          NewBookRepository(db),
+		BookAggregate: NewBookAggregateRepository(db),
+		Author:        NewAuthorRepository(db),
 	}
 }
