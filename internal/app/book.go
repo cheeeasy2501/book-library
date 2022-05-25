@@ -27,7 +27,7 @@ func (a *App) GetBooks(ctx *gin.Context) {
 
 	rel := forms.Relationships{}
 	// TODO: Problem with bind relations
-	relationsQuery, ok := ctx.GetQuery("relationships")
+	relationsQuery, ok := ctx.GetQuery("relations")
 	if ok {
 		err = rel.UnmarshalText([]byte(relationsQuery))
 		if err != nil {

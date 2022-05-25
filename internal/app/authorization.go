@@ -34,8 +34,6 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 		"token": token,
 		"user":  user,
 	})
-
-	//a.SendResponse(ctx, user)
 }
 
 func (a *App) SignUpHandler(ctx *gin.Context) {

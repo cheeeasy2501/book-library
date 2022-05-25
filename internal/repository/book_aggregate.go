@@ -6,7 +6,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
-	"github.com/jackskj/carta"
 	"github.com/tsenart/nap"
 )
 
@@ -21,8 +20,9 @@ func NewBookAggregateRepository(db *nap.DB) *BookAggregateRepository {
 func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error) {
 	var (
 		//author        model.Author
-		booksAggegate []model.BookAggregate
+		books []model.BookAggregate
 	)
+	bookMap := make(map[uint64]model.BookAggregate, 0)
 	//TODO: REALIZATION FOR BOOK AGGREGATE
 	//pq.Array  author.Columns() - not work - author.*
 	query, args, err := sq.Select(fmt.Sprintf("books.*, array_agg(%s)", "author.*")).
@@ -47,28 +47,11 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 	}
 	defer rows.Close()
 
-	err = carta.Map(rows, &booksAggegate)
-	if err != nil {
-		return nil, err
+	for rows.Next() {
+		//TODO REALIZATION
 	}
 
-	//scan := append(author.Fields(), bookId)
-	//for rows.Next() {
-	//	err = rows.Scan(scan)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//
-	//	for _, book := range books {
-	//		if book.Id == bookId {
-	//			book.Authors = append(book.Authors, author)
-	//			break
-	//		}
-	//	}
-	//}
-
-	//return books, nil
-	return nil, nil
+	return books, nil
 }
 
 //func (a *Author) GetBookRelations(ctx context.Context, books []model.Book) ([]model.Book, error) {
