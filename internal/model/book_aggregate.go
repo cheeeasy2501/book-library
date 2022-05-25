@@ -1,8 +1,25 @@
 package model
 
+import (
+	"encoding/json"
+	"errors"
+)
+
+type BookAuthors []Author
+
+// impliment sql.Scanner
+func (b *BookAuthors) Scan(src interface{}) error {
+	bts, ok := src.([]byte)
+	if !ok {
+		return errors.New("Error Scanning Array")
+	}
+
+	return json.Unmarshal(bts, b)
+}
+
 type BookAggregate struct {
 	Book
-	Authors []Author `json:"authors,omitempty"`
+	BookAuthors `json:"authors,omitempty"`
 }
 
 func (a *BookAggregate) Columns() string {
