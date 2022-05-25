@@ -27,9 +27,8 @@ func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Paginatio
 		err   error
 		books []model.Book
 	)
-	offset := paginator.Limit * (paginator.Page - 1)
 	query, args, err := sq.Select("id, title, description, link, in_stock, created_at, updated_at").
-		From(bookTableName).Limit(paginator.Limit).Offset(offset).
+		From(bookTableName).Limit(paginator.Limit).Offset(paginator.GetOffset()).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return nil, err

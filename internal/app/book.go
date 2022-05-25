@@ -27,13 +27,17 @@ func (a *App) GetBooks(ctx *gin.Context) {
 
 	rel := forms.Relationships{}
 	// TODO: Problem with bind relations
-	err = ctx.BindQuery(&rel)
-	if err != nil {
-		return
+	relationsQuery, ok := ctx.GetQuery("relationships")
+	if ok {
+		err = rel.UnmarshalText([]byte(relationsQuery))
+		if err != nil {
+			return
+		}
 	}
+
 	relations := rel.Relations.FilterRelations(forms.GetBookRelations())
 	// Mock!
-	relations = forms.GetBookRelations()
+	//relations = forms.GetBookRelations()
 	if len(relations) != 0 {
 		books, err := a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
 		if err != nil {

@@ -25,17 +25,17 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	user, _, err := a.service.Authorization.SignIn(ctx, credentials)
+	user, token, err := a.service.Authorization.SignIn(ctx, credentials)
 	if err != nil {
 		return
 	}
 
-	//a.SendResponse(ctx, gin.H{
-	//	"token": token,
-	//	"user":  user,
-	//})
+	a.SendResponse(ctx, gin.H{
+		"token": token,
+		"user":  user,
+	})
 
-	a.SendResponse(ctx, user)
+	//a.SendResponse(ctx, user)
 }
 
 func (a *App) SignUpHandler(ctx *gin.Context) {
