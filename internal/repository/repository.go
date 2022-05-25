@@ -18,7 +18,7 @@ type UserRepoInterface interface {
 }
 
 type BookRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Book, error)
+	GetPage(ctx context.Context, paginator forms.Pagination) ([]model.Book, error)
 	GetById(ctx context.Context, id uint64) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error
@@ -28,6 +28,7 @@ type BookRepoInterface interface {
 //TODO: CHECK IT
 type BookAggregateRepoInterface interface {
 	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
+	GetById(ctx context.Context, id uint64, relations forms.Relations) (*model.BookAggregate, error)
 }
 
 type AuthorRepoInterface interface {

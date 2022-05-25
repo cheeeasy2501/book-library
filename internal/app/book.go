@@ -25,19 +25,18 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		return
 	}
 
-	rel := forms.Relationships{}
-	// TODO: Problem with bind relations
+	// TODO: repeated code with relations - move to func
+	relationStruct := forms.Relationships{}
 	relationsQuery, ok := ctx.GetQuery("relations")
 	if ok {
-		err = rel.UnmarshalText([]byte(relationsQuery))
+		err = relationStruct.UnmarshalText([]byte(relationsQuery))
 		if err != nil {
 			return
 		}
 	}
 
-	relations := rel.Relations.FilterRelations(forms.GetBookRelations())
-	// Mock!
-	//relations = forms.GetBookRelations()
+	relations := relationStruct.Relations.FilterRelations(forms.GetBookRelations())
+
 	if len(relations) != 0 {
 		books, err := a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
 		if err != nil {
@@ -45,7 +44,7 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		}
 		a.SendResponse(ctx, books)
 	} else {
-		books, err := a.service.Book.GetAll(ctx, paginateForm, relations)
+		books, err := a.service.Book.GetAll(ctx, paginateForm)
 		if err != nil {
 			return
 		}
@@ -64,12 +63,32 @@ func (a *App) GetBook(ctx *gin.Context) {
 
 	form := forms.GetBook{}
 	err = ctx.BindUri(&form)
-	bk, err := a.service.Book.GetById(ctx, form.Id)
-	if err != nil {
-		return
+
+	// TODO: repeated code with relations - move to func
+	relationStruct := forms.Relationships{}
+	relationsQuery, ok := ctx.GetQuery("relations")
+	if ok {
+		err = relationStruct.UnmarshalText([]byte(relationsQuery))
+		if err != nil {
+			return
+		}
 	}
 
-	a.SendResponse(ctx, bk)
+	relations := relationStruct.Relations.FilterRelations(forms.GetBookRelations())
+
+	if len(relations) != 0 {
+		books, err := a.service.BookAggregate.GetById(ctx, form.Id, relations)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, books)
+	} else {
+		books, err := a.service.Book.GetById(ctx, form.Id)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, books)
+	}
 }
 
 func (a *App) CreateBook(ctx *gin.Context) {

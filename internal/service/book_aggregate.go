@@ -18,9 +18,17 @@ func NewBookAggregateService(repo repository.BookAggregateRepoInterface) *BookAg
 }
 
 func (s *BookAggregateService) GetAll(ctx context.Context, params forms.Pagination, relationships forms.Relations) ([]model.BookAggregate, error) {
-	page, err := s.repo.GetPage(ctx, params, relationships)
+	books, err := s.repo.GetPage(ctx, params, relationships)
 	if err != nil {
 		return nil, err
 	}
-	return page, nil
+	return books, nil
+}
+
+func (s *BookAggregateService) GetById(ctx context.Context, bookId uint64, relations forms.Relations) (*model.BookAggregate, error) {
+	book, err := s.repo.GetById(ctx, bookId, relations)
+	if err != nil {
+		return nil, err
+	}
+	return book, nil
 }

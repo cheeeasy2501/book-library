@@ -1,13 +1,13 @@
 package model
 
 type User struct {
-	Model
 	Id        int64  `json:"id"`
 	UserName  string `json:"username"`
 	password  string
 	FirstName *string `json:"firstname,omitempty"`
 	LastName  *string `json:"lastname,omitempty"`
 	Email     *string `json:"email,omitempty"`
+	Timestamp
 }
 
 func (user *User) Password() string {

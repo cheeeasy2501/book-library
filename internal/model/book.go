@@ -1,12 +1,12 @@
 package model
 
 type Book struct {
-	Model
-	PublishHouseId uint64 `json:"publish_house_id"`
-	Title          string `json:"title" binding:"required"`
-	Description    string `json:"description"`
-	Link           string `json:"link" binding:"url"`
-	InStock        uint   `json:"in_stock"`
+	Id          uint64 `json:"id"`
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description"`
+	Link        string `json:"link" binding:"url"`
+	InStock     uint   `json:"in_stock"`
+	Timestamp
 }
 
 func (a *Book) Columns() string {

@@ -1,10 +1,11 @@
 package model
 
 type Author struct {
-	Model
+	Id        uint64 `json:"id"`
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
-	Books     []Book `json:"books,omitempty"`
+	Timestamp
+	Books []Book `json:"books,omitempty"`
 }
 
 func (a *Author) Columns() string {
