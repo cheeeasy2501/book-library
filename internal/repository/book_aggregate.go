@@ -22,10 +22,10 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 		//author        model.Author
 		books []model.BookAggregate
 	)
-	bookMap := make(map[uint64]model.BookAggregate, 0)
+	//bookMap := make(map[uint64]model.BookAggregate, 0)
 	//TODO: REALIZATION FOR BOOK AGGREGATE
 	//pq.Array  author.Columns() - not work - author.*
-	query, args, err := sq.Select(fmt.Sprintf("books.*, array_agg(%s)", "author.*")).
+	query, args, err := sq.Select(fmt.Sprintf("books.*, json_agg(%s)", "author.*")).
 		From("books").LeftJoin("author_books on books.id = author_books.book_id").
 		LeftJoin("author on author.id = author_books.author_id").
 		GroupBy("books.id").OrderBy("books.id").
@@ -46,9 +46,16 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		//TODO REALIZATION
+		book := model.BookAggregate{}
+		var test, mest string
+		err = rows.Scan(&book.Id, &mest, &book.Title,
+			&book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt,
+			&test)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return books, nil
