@@ -2,8 +2,8 @@ package model
 
 type Author struct {
 	Model
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
 	Books     []Book `json:"books,omitempty"`
 }
 

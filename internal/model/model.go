@@ -12,8 +12,8 @@ type TestMapper interface {
 
 type Model struct {
 	Id        uint64    `json:"id"`
-	CreatedAt time.Time `json:"createdAt" db:"created_at"`
-	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 func (m *Model) ToMap() (map[string]interface{}, error) {

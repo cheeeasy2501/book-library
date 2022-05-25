@@ -22,15 +22,11 @@ type BookAggregate struct {
 	BookAuthors `json:"authors,omitempty"`
 }
 
+// TODO: Trying to create Mapper
 func (a *BookAggregate) Columns() string {
-	author := Author{}
-	columns := a.Book.Columns() + ", " + author.Columns()
-	//+ a.Authors[0].Columns()
-	return columns
+	return a.Book.Columns()
 }
 
 func (a *BookAggregate) Fields() []interface{} {
-	author := Author{}
-	fields := []interface{}{&a.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, a.UpdatedAt}
-	return append(fields, author.Fields()...)
+	return []interface{}{&a.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, a.UpdatedAt}
 }

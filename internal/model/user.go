@@ -3,10 +3,10 @@ package model
 type User struct {
 	Model
 	Id        int64  `json:"id"`
-	UserName  string `json:"userName"`
+	UserName  string `json:"username"`
 	password  string
-	FirstName *string `json:"firstName,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
+	FirstName *string `json:"firstname,omitempty"`
+	LastName  *string `json:"lastname,omitempty"`
 	Email     *string `json:"email,omitempty"`
 }
 

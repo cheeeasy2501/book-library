@@ -26,6 +26,7 @@ func (r *Relations) UnmarshalText(data []byte) error {
 	return nil
 }
 
+// implements encoding.TextMarshaler
 func (r Relations) MarshalText() ([]byte, error) {
 	n := len(r)
 	if n == 0 {
@@ -43,6 +44,7 @@ func (r Relations) MarshalText() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
+//implement json.Unmarshaler
 func (r *Relations) UnmarshalJSON(data []byte) error {
 	if bytes.Equal(data, []byte("null")) {
 		return nil
@@ -50,6 +52,7 @@ func (r *Relations) UnmarshalJSON(data []byte) error {
 	return r.UnmarshalText(data)
 }
 
+//implement json.Marshaler
 func (r Relations) MarshalJSON() ([]byte, error) {
 	n := len(r)
 	if n == 0 {
@@ -68,21 +71,11 @@ func (r Relations) MarshalJSON() ([]byte, error) {
 }
 
 const (
-	AuthorRel Relation = Relation("authors")
-	TestRel   Relation = Relation("tests")
+	AuthorRel = Relation("authors")
 )
-
-func (r Relation) String() string {
-	return r.String()
-}
-
-func GetBookRelations() []Relation {
-	return []Relation{AuthorRel, TestRel}
-}
 
 func (r *Relations) FilterRelations(relations []Relation) []Relation {
 	filteredRelations := []Relation{}
-	//TODO: error 0 - authors,test123,tests invalid value
 	for _, value := range *r {
 		if slices.Contains(relations, value) {
 			filteredRelations = append(filteredRelations, value)
@@ -90,4 +83,9 @@ func (r *Relations) FilterRelations(relations []Relation) []Relation {
 	}
 
 	return filteredRelations
+}
+
+// Relations
+func GetBookRelations() []Relation {
+	return []Relation{AuthorRel}
 }
