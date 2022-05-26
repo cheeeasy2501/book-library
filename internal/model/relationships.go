@@ -1,4 +1,4 @@
-package forms
+package model
 
 import (
 	"bytes"
@@ -14,6 +14,24 @@ type (
 		Relations `form:"relations"`
 	}
 )
+
+type RelationsInterface interface {
+	UnmarshalText(data []byte) error
+	UnmarshalJSON(data []byte) error
+	FilterRelations(relations []Relation) []Relation
+}
+
+// implement RelationsInterface
+func (r *Relations) FilterRelations(relations []Relation) []Relation {
+	filteredRelations := []Relation{}
+	for _, value := range *r {
+		if slices.Contains(relations, value) {
+			filteredRelations = append(filteredRelations, value)
+		}
+	}
+
+	return filteredRelations
+}
 
 // implements encoding.TextUnmarshaler
 func (r *Relations) UnmarshalText(data []byte) error {
@@ -68,25 +86,4 @@ func (r Relations) MarshalJSON() ([]byte, error) {
 	}
 
 	return buff.Bytes(), nil
-}
-
-const (
-	AuthorRel       = Relation("authors")
-	PublishHouseRel = Relation("publish_house")
-)
-
-func (r *Relations) FilterRelations(relations []Relation) []Relation {
-	filteredRelations := []Relation{}
-	for _, value := range *r {
-		if slices.Contains(relations, value) {
-			filteredRelations = append(filteredRelations, value)
-		}
-	}
-
-	return filteredRelations
-}
-
-// Relations
-func GetBookRelations() []Relation {
-	return []Relation{AuthorRel, PublishHouseRel}
 }

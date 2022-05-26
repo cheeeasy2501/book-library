@@ -17,7 +17,7 @@ func NewBookAggregateRepository(db *nap.DB) *BookAggregateRepository {
 	return &BookAggregateRepository{db: db}
 }
 
-func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error) {
+func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations model.Relations) ([]model.BookAggregate, error) {
 	var (
 		books []model.BookAggregate
 	)
@@ -61,7 +61,7 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 	return books, nil
 }
 
-func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, relations forms.Relations) (*model.BookAggregate, error) {
+func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, relations model.Relations) (*model.BookAggregate, error) {
 	var (
 		err error
 	)

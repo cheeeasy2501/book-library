@@ -69,7 +69,7 @@ func (bs *BookService) Delete(ctx context.Context, bookId uint64) error {
 	return nil
 }
 
-//func (bs *BookService) WithRelations(ctx context.Context, books []model.Book, relations forms.Relations) ([]model.Book, error) {
+//func (bs *BookService) WithRelations(ctx context.Context, books []model.Book, relations model.Relations) ([]model.Book, error) {
 //	var err error
 //	for _, relation := range relations {
 //		switch relation {

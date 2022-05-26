@@ -32,8 +32,8 @@ type BookServiceInterface interface {
 }
 
 type BookAggregateServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
-	GetById(ctx context.Context, bookId uint64, relations forms.Relations) (*model.BookAggregate, error)
+	GetAll(ctx context.Context, params forms.Pagination, relations model.Relations) ([]model.BookAggregate, error)
+	GetById(ctx context.Context, bookId uint64, relations model.Relations) (*model.BookAggregate, error)
 }
 
 type Service struct {

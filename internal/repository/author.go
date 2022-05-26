@@ -18,7 +18,7 @@ func NewAuthorRepository(db *nap.DB) *Author {
 	}
 }
 
-func (a *Author) GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Author, error) {
+func (a *Author) GetPage(ctx context.Context, paginator forms.Pagination, relations model.Relations) ([]model.Author, error) {
 	return nil, nil
 }
 func (a *Author) GetById(ctx context.Context, id uint64) (*model.Author, error) {

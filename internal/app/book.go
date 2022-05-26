@@ -26,7 +26,7 @@ func (a *App) GetBooks(ctx *gin.Context) {
 	}
 
 	// TODO: repeated code with relations - move to func
-	relationStruct := forms.Relationships{}
+	relationStruct := model.Relationships{}
 	relationsQuery, ok := ctx.GetQuery("relations")
 	if ok {
 		err = relationStruct.UnmarshalText([]byte(relationsQuery))
@@ -35,7 +35,7 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		}
 	}
 
-	relations := relationStruct.Relations.FilterRelations(forms.GetBookRelations())
+	relations := relationStruct.Relations.FilterRelations(model.GetBookRelations())
 
 	if len(relations) != 0 {
 		books, err := a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
@@ -65,7 +65,7 @@ func (a *App) GetBook(ctx *gin.Context) {
 	err = ctx.BindUri(&form)
 
 	// TODO: repeated code with relations - move to func
-	relationStruct := forms.Relationships{}
+	relationStruct := model.Relationships{}
 	relationsQuery, ok := ctx.GetQuery("relations")
 	if ok {
 		err = relationStruct.UnmarshalText([]byte(relationsQuery))
@@ -74,7 +74,7 @@ func (a *App) GetBook(ctx *gin.Context) {
 		}
 	}
 
-	relations := relationStruct.Relations.FilterRelations(forms.GetBookRelations())
+	relations := relationStruct.Relations.FilterRelations(model.GetBookRelations())
 
 	if len(relations) != 0 {
 		books, err := a.service.BookAggregate.GetById(ctx, form.Id, relations)

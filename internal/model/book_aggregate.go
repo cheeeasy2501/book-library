@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lann/builder"
 )
 
 type BookAuthors []Author
@@ -24,6 +25,20 @@ type BookAggregate struct {
 		BookAuthors        BookAuthors         `json:"authors,omitempty"`
 		BookHousePublishes *BookHousePublishes `json:"house_publishes,omitempty"`
 	} `json:"relations"`
+}
+
+// Relations
+const (
+	AuthorRel       = Relation("authors")
+	PublishHouseRel = Relation("publish_house")
+)
+
+func GetBookRelations() []Relation {
+	return []Relation{AuthorRel, PublishHouseRel}
+}
+
+func (ba *BookAggregate) WithRelations(builder *builder.Builder, scan *[]interface{}, rel *Relationships) {
+
 }
 
 func (ba *BookAggregate) WithAuthors(sb *sq.SelectBuilder, scan *[]interface{}) sq.SelectBuilder {

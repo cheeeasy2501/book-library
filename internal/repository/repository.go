@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
@@ -27,12 +28,12 @@ type BookRepoInterface interface {
 
 //TODO: CHECK IT
 type BookAggregateRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
-	GetById(ctx context.Context, id uint64, relations forms.Relations) (*model.BookAggregate, error)
+	GetPage(ctx context.Context, paginator forms.Pagination, relations model.Relations) ([]model.BookAggregate, error)
+	GetById(ctx context.Context, id uint64, relations model.Relations) (*model.BookAggregate, error)
 }
 
 type AuthorRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.Author, error)
+	GetPage(ctx context.Context, paginator forms.Pagination, relations model.Relations) ([]model.Author, error)
 	GetById(ctx context.Context, id uint64) (*model.Author, error)
 	Create(ctx context.Context, book *model.Author) error
 	Update(ctx context.Context, book *model.Author) error
@@ -47,10 +48,10 @@ type Repository struct {
 	Author        AuthorRepoInterface
 }
 
-func NewRepository(db *nap.DB) *Repository {
+func NewRepository(db *nap.DB, builder *builder.Builder) *Repository {
 	return &Repository{
 		User:          NewUserRepository(db),
-		Book:          NewBookRepository(db),
+		Book:          NewBookRepository(db, builder.BookBuilder),
 		BookAggregate: NewBookAggregateRepository(db),
 		Author:        NewAuthorRepository(db),
 	}
