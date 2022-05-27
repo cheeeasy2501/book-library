@@ -1,4 +1,4 @@
--- INSERT PUBLISH HOUSES
+-- INS PUBLISH HOUSES
 INSERT INTO house_publishes (id, name, created_at, updated_at)
 VALUES (1, 'Test Publish House 1', now(), now());
 INSERT INTO house_publishes (id, name, created_at, updated_at)
@@ -7,7 +7,7 @@ INSERT INTO house_publishes (id, name, created_at, updated_at)
 VALUES (3, 'Test Publish House 3', now(), now());
 INSERT INTO house_publishes (id, name, created_at, updated_at)
 VALUES (4, 'Test Publish House 4', now(), now());
--- INSERT BOOKS
+-- INS BOOKS
 INSERT INTO books (id, publishhouse_id, title, description, link, in_stock, created_at, updated_at)
 VALUES (1, 1, 'Test Book Title 1',
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam vulputate tellus metus, vel lobortis sapien egestas nec. Quisque non vestibulum mi. Proin malesuada lectus orci, quis tempor orci congue in. Cras sem elit, pretium vel posuere eu, luctus nec mi. Donec vulputate dolor in imperdiet volutpat. Ut sit amet ipsum ante. Vestibulum sapien nunc, sollicitudin at dictum eget, scelerisque nec lorem. Nulla bibendum rhoncus elit vel cursus. Sed feugiat iaculis nunc, quis efficitur odio vulputate et. Maecenas ut gravida massa. Duis arcu justo, venenatis eu laoreet et, placerat at est. Quisque varius ipsum dolor, aliquam fermentum orci ultrices condimentum. Duis quis dolor magna. Nunc aliquet purus sit amet ligula elementum vulputate. In placerat arcu placerat eros feugiat, sed lobortis justo sodales.',
