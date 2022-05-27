@@ -42,7 +42,7 @@ func (ba *BookAggregate) WithRelations(builder *builder.Builder, scan *[]interfa
 }
 
 func (ba *BookAggregate) WithAuthors(sb *sq.SelectBuilder, scan *[]interface{}) sq.SelectBuilder {
-	*scan = append(*scan, &ba.Relations.BookAuthors)
+	*scan = append(*scan, &ba.Relations.BookAuthors) //scanfields
 	return sb.Columns(`json_agg(author.*) as authors`).LeftJoin("author_books on books.id = author_books.book_id").
 		LeftJoin("author on author.id = author_books.author_id")
 }
@@ -56,10 +56,10 @@ func (ba *BookAggregate) WithPublishHouse(sb *sq.SelectBuilder, scan *[]interfac
 }
 
 // TODO: Trying to create Mapper
-//func (a *BookAggregate) Columns() string {
-//	return a.Book.Columns()
-//}
-//
-//func (a *BookAggregate) Fields() []interface{} {
-//	return []interface{}{&a.Book.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, a.UpdatedAt}
-//}
+func (a *BookAggregate) Columns() string {
+	return a.Book.Columns()
+}
+
+func (a *BookAggregate) Fields() []interface{} {
+	return []interface{}{&a.Book.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, a.UpdatedAt}
+}

@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
+	builder2 "github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
-	"golang.org/x/exp/slices"
 )
 
 type BookAggregateRepository struct {
@@ -66,21 +66,27 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 		err error
 	)
 	//TODO: refactoring for using custom relations
+	new()
 	book := &model.BookAggregate{}
 	//selectArr := book.Book.Fields()
 	scanFields := book.Fields()
-	builder := sq.Select(`books.id, books.title, books.description, books.link, books.in_stock, books.created_at, books.updated_at 
-		`).From("books")
-	if slices.Contains(relations, forms.AuthorRel) {
-		builder = book.WithAuthors(&builder, &scanFields)
-	}
+	//model.AuthorRel
+	//builder := sq.Select(`books.id, books.title, books.description, books.link, books.in_stock, books.created_at, books.updated_at
+	//	`).From("books")
+	//if slices.Contains(relations, model.AuthorRel) {
+	//	builder = book.WithAuthors(&builder, &scanFields)
+	//}
+	//
+	//if slices.Contains(relations, model.PublishHouseRel) {
+	//	builder = book.WithPublishHouse(&builder, &scanFields)
+	//}
+	bldr := builder2.NewBookBuilder(&relations)
 
-	if slices.Contains(relations, forms.PublishHouseRel) {
-		builder = book.WithPublishHouse(&builder, &scanFields)
-	}
+	//builder->setModel(&model)->setRelations(&relations)->exec() return model <- заполнить
 
-	builder = builder.GroupBy("books.id")
-	query, args, err := builder.ToSql()
+	bldr.WithAuthors().With
+	//builder = builder.GroupBy("books.id")
+	//query, args, err := builder.ToSql()
 	//.
 	//From("books").LeftJoin("author_books on books.id = author_books.book_id").
 	//LeftJoin("author on author.id = author_books.author_id").
@@ -109,10 +115,10 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 		return nil, err
 	}
 
-	//err = row.Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt,
-	//	&book.BookAuthors,
-	//	&book.BookHousePublishes.Id, &book.BookHousePublishes.Name,
-	//	&book.BookHousePublishes.CreatedAt, &book.BookHousePublishes.UpdatedAt)
+	err = row.Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt,
+		&book.BookAuthors,
+		&book.BookHousePublishes.Id, &book.BookHousePublishes.Name,
+		&book.BookHousePublishes.CreatedAt, &book.BookHousePublishes.UpdatedAt)
 	err = row.Scan(scanFields...)
 	if err != nil {
 		return nil, err

@@ -21,7 +21,7 @@ type RelationsInterface interface {
 	FilterRelations(relations []Relation) []Relation
 }
 
-// implement RelationsInterface
+// FilterRelations implement RelationsInterface
 func (r *Relations) FilterRelations(relations []Relation) []Relation {
 	filteredRelations := []Relation{}
 	for _, value := range *r {
