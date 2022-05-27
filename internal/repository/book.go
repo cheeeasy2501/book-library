@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
-	"github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
@@ -16,12 +15,11 @@ const (
 )
 
 type BookRepository struct {
-	db      *nap.DB
-	builder *builder.BookBuilderInterface
+	db *nap.DB
 }
 
-func NewBookRepository(db *nap.DB, build *builder.BookBuilderInterface) *BookRepository {
-	return &BookRepository{db: db, builder: build}
+func NewBookRepository(db *nap.DB) *BookRepository {
+	return &BookRepository{db: db}
 }
 
 func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination) ([]model.Book, error) {

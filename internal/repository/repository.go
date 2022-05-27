@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
@@ -48,10 +47,10 @@ type Repository struct {
 	Author        AuthorRepoInterface
 }
 
-func NewRepository(db *nap.DB, builder *builder.Builder) *Repository {
+func NewRepository(db *nap.DB) *Repository {
 	return &Repository{
 		User:          NewUserRepository(db),
-		Book:          NewBookRepository(db, builder.BookBuilder),
+		Book:          NewBookRepository(db),
 		BookAggregate: NewBookAggregateRepository(db),
 		Author:        NewAuthorRepository(db),
 	}

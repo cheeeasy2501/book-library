@@ -57,7 +57,8 @@ func (ba *BookAggregate) WithPublishHouse(sb *sq.SelectBuilder, scan *[]interfac
 
 // TODO: Trying to create Mapper
 func (a *BookAggregate) Columns() string {
-	return a.Book.Columns()
+	//return a.Book.Columns()
+	return ""
 }
 
 func (a *BookAggregate) Fields() []interface{} {

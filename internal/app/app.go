@@ -2,9 +2,7 @@ package app
 
 import (
 	"context"
-	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
-	"github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/repository"
@@ -33,8 +31,7 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 		return nil, err
 	}
 	engine := gin.Default()
-	build := builder.NewBuilder(sq.SelectBuilder{}.Columns())
-	repos := repository.NewRepository(connection, build)
+	repos := repository.NewRepository(connection)
 	services := service.NewService(repos)
 
 	application := &App{
