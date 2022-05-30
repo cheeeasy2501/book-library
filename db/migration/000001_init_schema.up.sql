@@ -21,14 +21,14 @@ CREATE TABLE author
 
 CREATE TABLE books
 (
-    Id              serial primary key,
-    PublishHouse_Id integer,
-    Title           varchar(30),
-    Description     text,
-    Link            varchar(100),
-    In_Stock        smallint check (In_Stock >= 0),
-    Created_At      timestamp with time zone,
-    Updated_At      timestamp with time zone
+    Id               serial primary key,
+    House_Publish_Id integer,
+    Title            varchar(30),
+    Description      text,
+    Link             varchar(100),
+    In_Stock         smallint check (In_Stock >= 0),
+    Created_At       timestamp with time zone,
+    Updated_At       timestamp with time zone
 );
 
 CREATE TABLE author_books

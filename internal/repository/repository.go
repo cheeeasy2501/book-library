@@ -2,10 +2,13 @@ package repository
 
 import (
 	"context"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
 )
+
+var builder = sq.StatementBuilderType{}.PlaceholderFormat(sq.Dollar)
 
 type UserRepoInterface interface {
 	GetPage(ctx context.Context, paginator forms.Pagination) ([]model.User, error)
@@ -14,7 +17,6 @@ type UserRepoInterface interface {
 	Update(ctx context.Context, usr *model.User) error
 	Delete(ctx context.Context, id uint64) error
 	FindByUserName(cxt context.Context, username string) (*model.User, error)
-	CheckSignIn(context.Context, *forms.Credentials) (*model.User, error)
 }
 
 type BookRepoInterface interface {

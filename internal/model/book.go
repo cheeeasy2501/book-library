@@ -1,18 +1,11 @@
 package model
 
 type Book struct {
-	Id          uint64 `json:"id"`
-	Title       string `json:"title" binding:"required"`
-	Description string `json:"description"`
-	Link        string `json:"link" binding:"url"`
-	InStock     uint   `json:"in_stock"`
+	Id             uint64 `json:"id"`
+	HousePublishId uint64 `json:"house_publish_id"`
+	Title          string `json:"title" binding:"required"`
+	Description    string `json:"description"`
+	Link           string `json:"link" binding:"url"`
+	InStock        uint   `json:"in_stock"`
 	Timestamp
-}
-
-func (a *Book) Columns() string {
-	return "author.id, author.firstname, author.lastname, author.created_at, author.updated_at"
-}
-
-func (a *Book) Fields() []interface{} {
-	return []interface{}{&a.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, &a.UpdatedAt}
 }

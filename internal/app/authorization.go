@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/forms"
-	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
@@ -38,26 +37,26 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 
 func (a *App) SignUpHandler(ctx *gin.Context) {
 	var (
-		usr *model.User
-		err error
+		form *forms.CreateUser
+		err  error
 	)
 	defer func() {
 		a.SendError(ctx, err)
 	}()
 
-	err = ctx.ShouldBindJSON(&usr)
+	err = ctx.ShouldBindJSON(&form)
 	if err != nil {
 		return
 	}
 
-	token, err := a.service.Authorization.SignUp(ctx, usr)
+	user, token, err := a.service.Authorization.SignUp(ctx, form)
 	if err != nil {
 		return
 	}
 
 	a.SendResponse(ctx, gin.H{
 		"token": token,
-		"user":  usr,
+		"user":  user,
 	})
 }
 

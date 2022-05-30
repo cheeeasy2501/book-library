@@ -3,7 +3,6 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	sq "github.com/Masterminds/squirrel"
 )
 
 type BookAuthors []Author
@@ -25,26 +24,3 @@ type BookAggregate struct {
 		BookHousePublishes *BookHousePublishes `json:"house_publishes,omitempty"`
 	} `json:"relations"`
 }
-
-func (ba *BookAggregate) WithAuthors(sb *sq.SelectBuilder, scan *[]interface{}) sq.SelectBuilder {
-	*scan = append(*scan, &ba.Relations.BookAuthors)
-	return sb.Columns(`json_agg(author.*) as authors`).LeftJoin("author_books on books.id = author_books.book_id").
-		LeftJoin("author on author.id = author_books.author_id")
-}
-
-func (ba *BookAggregate) WithPublishHouse(sb *sq.SelectBuilder, scan *[]interface{}) sq.SelectBuilder {
-	ba.Relations.BookHousePublishes = &BookHousePublishes{}
-	*scan = append(*scan, &ba.Relations.BookHousePublishes.Id, &ba.Relations.BookHousePublishes.Name,
-		&ba.Relations.BookHousePublishes.CreatedAt, &ba.Relations.BookHousePublishes.UpdatedAt)
-	return sb.Columns(`house_publishes.*`).LeftJoin("house_publishes on books.publishhouse_id = house_publishes.id").
-		GroupBy("house_publishes.id")
-}
-
-// TODO: Trying to create Mapper
-//func (a *BookAggregate) Columns() string {
-//	return a.Book.Columns()
-//}
-//
-//func (a *BookAggregate) Fields() []interface{} {
-//	return []interface{}{&a.Book.Id, &a.Title, &a.Description, &a.Link, &a.InStock, &a.CreatedAt, a.UpdatedAt}
-//}

@@ -10,9 +10,9 @@ import (
 type AuthorizationServiceInterface interface {
 	GenerateToken(usr *model.User) (string, error)
 	ParseToken(accessToken string) (int64, error)
-	HashPassword(password string) (string, error)
+	HashPassword(password string) ([]byte, error)
 	SignIn(ctx context.Context, credentials *forms.Credentials) (*model.User, string, error)
-	SignUp(ctx context.Context, user *model.User) (string, error)
+	SignUp(ctx context.Context, userForm *forms.CreateUser) (*model.User, string, error)
 }
 
 type UserServiceInterface interface {

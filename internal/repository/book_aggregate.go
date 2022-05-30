@@ -20,17 +20,31 @@ func NewBookAggregateRepository(db *nap.DB) *BookAggregateRepository {
 func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error) {
 	var (
 		books []model.BookAggregate
+		scan  []interface{}
 	)
 
-	// Get books with join authors and publish house
-	query, args, err := sq.Select(`books.id, books.title, books.description, books.link, books.in_stock, books.created_at, books.updated_at, 
-		json_agg(author.*) as authors, house_publishes.*`).
-		From("books").LeftJoin("author_books on books.id = author_books.book_id").
-		LeftJoin("author on author.id = author_books.author_id").
-		LeftJoin("house_publishes on books.publishhouse_id = house_publishes.id").
-		GroupBy("books.id", "house_publishes.id").OrderBy("books.id").
-		Limit(paginator.Limit).Offset(paginator.GetOffset()).
-		PlaceholderFormat(sq.Dollar).ToSql()
+	b := builder.Select(`books.id, books.house_publish_id, books.title, 
+	     books.description, books.link, books.in_stock, books.created_at, books.updated_at 
+		`).
+		From(bookTableName)
+	withAuthors := slices.Contains(relations, forms.AuthorRel)
+	if withAuthors {
+		b = b.Columns(`json_agg(author.*) as authors`).
+			LeftJoin("author_books on books.id = author_books.book_id").
+			LeftJoin("author on author.id = author_books.author_id")
+	}
+	withPublishHouse := slices.Contains(relations, forms.PublishHouseRel)
+	if withPublishHouse {
+		b = b.Columns(`house_publishes.id, house_publishes.name,
+			house_publishes.created_at, house_publishes.updated_at`).
+			LeftJoin("house_publishes on books.house_publish_id = house_publishes.id").
+			GroupBy("house_publishes.id")
+	}
+	query, args, err := b.
+		GroupBy("books.id").
+		Offset(paginator.GetOffset()).
+		Limit(paginator.Limit).
+		ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +63,36 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 
 	for rows.Next() {
 		book := model.BookAggregate{}
-		err = rows.Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock,
-			&book.CreatedAt, &book.UpdatedAt, &book.Relations.BookAuthors, &book.Relations.BookHousePublishes.Id,
-			&book.Relations.BookHousePublishes.Name, &book.Relations.BookHousePublishes.CreatedAt, &book.Relations.BookHousePublishes.UpdatedAt)
+		scan = []interface{}{
+			&book.Id,
+			&book.HousePublishId,
+			&book.Title,
+			&book.Description,
+			&book.Link,
+			&book.InStock,
+			&book.CreatedAt,
+			&book.UpdatedAt,
+		}
+
+		if withAuthors {
+			scan = append(
+				scan,
+				&book.Relations.BookAuthors,
+			)
+		}
+
+		if withPublishHouse {
+			book.Relations.BookHousePublishes = &model.BookHousePublishes{}
+			scan = append(
+				scan,
+				&book.Relations.BookHousePublishes.Id,
+				&book.Relations.BookHousePublishes.Name,
+				&book.Relations.BookHousePublishes.CreatedAt,
+				&book.Relations.BookHousePublishes.UpdatedAt,
+			)
+		}
+
+		err = rows.Scan(scan...)
 		if err != nil {
 			return nil, err
 		}
@@ -65,35 +106,53 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 	var (
 		err error
 	)
-	//TODO: refactoring for using custom relations
+
 	book := &model.BookAggregate{}
-	//selectArr := book.Book.Fields()
-	scanFields := book.Fields()
-	builder := sq.Select(`books.id, books.title, books.description, books.link, books.in_stock, books.created_at, books.updated_at 
-		`).From("books")
+	scan := []interface{}{
+		&book.Id,
+		&book.HousePublishId,
+		&book.Title,
+		&book.Description,
+		&book.Link,
+		&book.InStock,
+		&book.CreatedAt,
+		&book.UpdatedAt,
+	}
+
+	b := builder.Select(`books.id, books.house_publish_id, books.title, 
+	     books.description, books.link, books.in_stock, books.created_at, books.updated_at 
+		`).
+		From(bookTableName).
+		Where(sq.Eq{"books.id": id})
+
 	if slices.Contains(relations, forms.AuthorRel) {
-		builder = book.WithAuthors(&builder, &scanFields)
+		book.Relations.BookAuthors = model.BookAuthors{}
+		scan = append(
+			scan,
+			&book.Relations.BookAuthors,
+		)
+		// json_agg not working with timestamp author.created_at, author.updated_at
+		b = b.Columns(`json_agg(author.*) as authors`).
+			LeftJoin("author_books on books.id = author_books.book_id").
+			LeftJoin("author on author.id = author_books.author_id")
 	}
 
 	if slices.Contains(relations, forms.PublishHouseRel) {
-		builder = book.WithPublishHouse(&builder, &scanFields)
+		book.Relations.BookHousePublishes = &model.BookHousePublishes{}
+		scan = append(
+			scan,
+			&book.Relations.BookHousePublishes.Id,
+			&book.Relations.BookHousePublishes.Name,
+			&book.Relations.BookHousePublishes.CreatedAt,
+			&book.Relations.BookHousePublishes.UpdatedAt,
+		)
+		b = b.Columns(`house_publishes.id, house_publishes.name,
+			house_publishes.created_at, house_publishes.updated_at`).
+			LeftJoin("house_publishes on books.house_publish_id = house_publishes.id").
+			GroupBy("house_publishes.id")
 	}
-
-	builder = builder.GroupBy("books.id")
-	query, args, err := builder.ToSql()
-	//.
-	//From("books").LeftJoin("author_books on books.id = author_books.book_id").
-	//LeftJoin("author on author.id = author_books.author_id").
-	//Where(sq.Eq{"books.id": id}).GroupBy("books.id", "house_publishes.id").
-	//OrderBy("books.id")
-
-	//query, args, err := sq.Select(`books.id, books.title, books.description, books.link, books.in_stock, books.created_at, books.updated_at,
-	//	json_agg(author.*) as authors, house_publishes.*`).
-	//	From("books").LeftJoin("author_books on books.id = author_books.book_id").
-	//	LeftJoin("author on author.id = author_books.author_id").
-	//	LeftJoin("house_publishes on books.publishhouse_id = house_publishes.id").
-	//	Where(sq.Eq{"books.id": id}).GroupBy("books.id", "house_publishes.id").
-	//	OrderBy("books.id").PlaceholderFormat(sq.Dollar).ToSql()
+	query, args, err := b.GroupBy("books.id").
+		ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +168,7 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 		return nil, err
 	}
 
-	//err = row.Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt,
-	//	&book.BookAuthors,
-	//	&book.BookHousePublishes.Id, &book.BookHousePublishes.Name,
-	//	&book.BookHousePublishes.CreatedAt, &book.BookHousePublishes.UpdatedAt)
-	err = row.Scan(scanFields...)
+	err = row.Scan(scan...)
 	if err != nil {
 		return nil, err
 	}

@@ -27,12 +27,17 @@ func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Paginatio
 		err   error
 		books []model.Book
 	)
-	query, args, err := sq.Select("id, title, description, link, in_stock, created_at, updated_at").
-		From(bookTableName).Limit(paginator.Limit).Offset(paginator.GetOffset()).
-		PlaceholderFormat(sq.Dollar).ToSql()
+	query, args, err := builder.
+		Select(`books.id, books.house_publish_id, books.title, books.description, 
+		books.link, books.in_stock, books.created_at, books.updated_at`).
+		From(bookTableName).
+		Limit(paginator.Limit).
+		Offset(paginator.GetOffset()).
+		ToSql()
 	if err != nil {
 		return nil, err
 	}
+
 	stmt, err := br.db.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -46,13 +51,21 @@ func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Paginatio
 
 	for rows.Next() {
 		book := model.Book{}
-		err = rows.Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt)
+		err = rows.Scan(&book.Id,
+			&book.Title,
+			&book.Description,
+			&book.Link,
+			&book.InStock,
+			&book.CreatedAt,
+			&book.UpdatedAt,
+		)
 		if err != nil {
 			return nil, err
 		}
 
 		books = append(books, book)
 	}
+
 	err = rows.Close()
 	if err != nil {
 		return nil, err
@@ -63,8 +76,12 @@ func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Paginatio
 
 func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, error) {
 	var book model.Book
-	query, args, err := sq.Select("id, title, description, link, in_stock, created_at, updated_at").
-		From(bookTableName).Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, args, err := builder.
+		Select(`books.id, books.house_publish_id, books.title, books.description, 
+		books.link, books.in_stock, books.created_at, books.updated_at`).
+		From(bookTableName).
+		Where(sq.Eq{"id": id}).
+		ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +92,16 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(args...).Scan(&book.Id, &book.Title, &book.Description, &book.Link, &book.InStock, &book.CreatedAt, &book.UpdatedAt)
+	err = stmt.QueryRow(args...).
+		Scan(
+			&book.Id,
+			&book.Title,
+			&book.Description,
+			&book.Link,
+			&book.InStock,
+			&book.CreatedAt,
+			&book.UpdatedAt,
+		)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
@@ -88,19 +114,36 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 }
 
 func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
-	query, args, err := sq.Insert(bookTableName).Columns("title, description, link, in_stock, created_at, updated_at").
-		Values(book.Title, book.Description, book.Link, book.InStock, book.CreatedAt, book.UpdatedAt).PlaceholderFormat(sq.Dollar).
-		Suffix("RETURNING id, created_at, updated_at").ToSql()
+	query, args, err := builder.
+		Insert(bookTableName).
+		Columns(`house_publish_id, title, description, link, in_stock, created_at, updated_at`).
+		Values(
+			book.Title,
+			book.Description,
+			book.Link,
+			book.InStock,
+			book.CreatedAt,
+			book.UpdatedAt,
+		).
+		Suffix("RETURNING id, created_at, updated_at").
+		ToSql()
 	if err != nil {
 		return err
 	}
+
 	stmt, err := br.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
+
 	result := stmt.QueryRow(args...)
-	err = result.Scan(&book.Id, &book.CreatedAt, &book.UpdatedAt)
+	err = result.Scan(
+		&book.Id,
+		&book.CreatedAt,
+		&book.UpdatedAt,
+	)
+
 	if err != nil {
 		return err
 	}
@@ -109,18 +152,26 @@ func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 }
 
 func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
-	query, args, err := sq.Update(bookTableName).Set("title", book.Title).
-		Set("description", book.Description).Set("link", book.Link).
-		Set("updated_at", book.UpdatedAt).PlaceholderFormat(sq.Dollar).Suffix("RETURNING created_at").
-		Where(sq.Eq{"id": book.Id}).ToSql()
+	query, args, err := builder.
+		Update(bookTableName).
+		Set("house_publish_id", book.HousePublishId).
+		Set("title", book.Title).
+		Set("description", book.Description).
+		Set("link", book.Link).
+		Set("updated_at", book.UpdatedAt).
+		Suffix("RETURNING created_at").
+		Where(sq.Eq{"id": book.Id}).
+		ToSql()
 	if err != nil {
 		return err
 	}
+
 	stmt, err := br.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
+
 	result := stmt.QueryRow(args...)
 	err = result.Scan(&book.CreatedAt)
 	if err != nil {
@@ -131,23 +182,30 @@ func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 }
 
 func (br *BookRepository) Delete(ctx context.Context, id uint64) error {
-	query, args, err := sq.Delete(bookTableName).Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
+	query, args, err := builder.
+		Delete(bookTableName).
+		Where(sq.Eq{"id": id}).
+		ToSql()
 	if err != nil {
 		return err
 	}
+
 	stmt, err := br.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
+
 	result, err := stmt.Exec(args...)
 	if err != nil {
 		return err
 	}
+
 	count, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
+
 	if count == 0 {
 		return apperrors.BookNotFound
 	}

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
@@ -14,7 +15,7 @@ import (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	UserId int64 `json:"userId"`
+	UserId int64 `json:"user_id"`
 }
 
 type AuthorizationService struct {
@@ -59,44 +60,73 @@ func (auth *AuthorizationService) ParseToken(accessToken string) (int64, error) 
 	return claims.UserId, nil
 }
 
-func (auth *AuthorizationService) HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost) //TODO: check password
+func (auth *AuthorizationService) HashPassword(password string) ([]byte, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(bytes), err
+
+	return bytes, err
+}
+
+func (auth *AuthorizationService) VerifyPassword(userPass, credentialsPass string) error {
+	comparePass, err := base64.StdEncoding.DecodeString(userPass)
+	if err != nil {
+		return err
+	}
+	err = bcrypt.CompareHashAndPassword(comparePass, []byte(credentialsPass))
+	if err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			return apperrors.InvalidCredentionals
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (auth *AuthorizationService) SignIn(ctx context.Context, credentials *forms.Credentials) (*model.User, string, error) {
-	usr, err := auth.repo.CheckSignIn(ctx, credentials)
+	user, err := auth.repo.FindByUserName(ctx, credentials.UserName)
+	if err != nil {
+		return nil, "", err
+	}
+	err = auth.VerifyPassword(user.Password(), credentials.Password)
 	if err != nil {
 		return nil, "", err
 	}
 
-	token, err := auth.GenerateToken(usr)
+	token, err := auth.GenerateToken(user)
 	if err != nil {
 		return nil, "", err
 	}
 
-	return usr, token, nil
+	return user, token, nil
 }
 
-func (auth *AuthorizationService) SignUp(ctx context.Context, user *model.User) (string, error) {
-	encryptedPass, err := auth.HashPassword(user.Password())
+func (auth *AuthorizationService) SignUp(ctx context.Context, userForm *forms.CreateUser) (*model.User, string, error) {
+	var user = &model.User{}
+	userForm.ToUserModel(user)
+	hashPassword, err := auth.HashPassword(user.Password())
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
-
+	encryptedPass := base64.StdEncoding.EncodeToString(hashPassword)
 	user.SetPassword(encryptedPass)
 	_, err = auth.repo.FindByUserName(ctx, user.UserName)
 	if err != nil && err != sql.ErrNoRows {
-		return "", err
+		return nil, "", err
 	}
 
 	err = auth.repo.Create(ctx, user)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
-	return auth.GenerateToken(user)
+	token, err := auth.GenerateToken(user)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, token, nil
 }
