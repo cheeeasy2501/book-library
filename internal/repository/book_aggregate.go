@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
@@ -12,6 +13,20 @@ import (
 
 type BookAggregateRepository struct {
 	db *nap.DB
+	tx *sql.Tx
+}
+
+func (bar *BookAggregateRepository) GetTx(ctx context.Context) (*sql.Tx, error) {
+	if bar.tx == nil {
+		tx, err := bar.db.BeginTx(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		bar.tx = tx
+	}
+
+	return bar.tx, nil
 }
 
 func NewBookAggregateRepository(db *nap.DB) *BookAggregateRepository {
@@ -175,4 +190,49 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 	}
 
 	return book, nil
+}
+
+func (bar *BookAggregateRepository) Create(ctx context.Context, book *model.BookAggregate) error {
+	tx, err := bar.GetTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+	bookQuery, bookArgs, err := builder.
+		Insert(bookTableName).
+		Values(
+			book.HousePublishId,
+			book.Title,
+			book.Description,
+			book.Link,
+			book.InStock,
+		).
+		Suffix("RETURNING id, created_at, updated_at").
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	prepareContext, err := tx.PrepareContext(ctx, bookQuery)
+	if err != nil {
+		return err
+	}
+	defer prepareContext.Close()
+
+	_, err = prepareContext.ExecContext(ctx, bookArgs...)
+	if err != nil {
+		return err
+	}
+	if len(book.Relations.BookAuthors) != 0 {
+		for author := range book.Relations.BookAuthors {
+			//if author.Id != 0 { // TODO: complete these variant
+			_ = author
+			//}
+		}
+	}
+	tx.Commit()
 }

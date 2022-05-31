@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
@@ -30,8 +31,10 @@ type BookRepoInterface interface {
 
 //TODO: CHECK IT
 type BookAggregateRepoInterface interface {
+	GetTx(ctx context.Context) (*sql.Tx, error)
 	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.BookAggregate, error)
 	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.BookAggregate, error)
+	Create(ctx context.Context, book *model.BookAggregate) error
 }
 
 type AuthorRepoInterface interface {

@@ -33,3 +33,12 @@ func (s *BookAggregateService) GetById(ctx context.Context, bookId uint64, relat
 	}
 	return book, nil
 }
+
+func (s *BookAggregateService) Create(ctx context.Context, book *model.BookAggregate) (*model.BookAggregate, error) {
+	err := s.repo.Create(ctx, book)
+	if err != nil {
+		return nil, err
+	}
+
+	return book, nil
+}
