@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/relationships"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 )
 
@@ -32,8 +33,16 @@ type BookServiceInterface interface {
 }
 
 type BookAggregateServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
-	GetById(ctx context.Context, bookId uint64, relations forms.Relations) (*model.BookAggregate, error)
+	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.BookAggregate, error)
+	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.BookAggregate, error)
+}
+
+type AuthorServiceInterface interface {
+	GetAll(ctx context.Context, params forms.Pagination) ([]model.Author, error)
+	GetById(ctx context.Context, bookId uint64) (*model.Author, error)
+	Create(ctx context.Context, book *model.Author) error
+	Update(ctx context.Context, book *model.Author) error
+	Delete(ctx context.Context, bookId uint64) error
 }
 
 type Service struct {
@@ -41,6 +50,7 @@ type Service struct {
 	User          UserServiceInterface
 	Book          BookServiceInterface
 	BookAggregate BookAggregateServiceInterface
+	Author        AuthorServiceInterface
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -49,5 +59,6 @@ func NewService(repos *repository.Repository) *Service {
 		User:          NewUserService(repos.User),
 		Book:          NewBookService(repos.Book),
 		BookAggregate: NewBookAggregateService(repos.BookAggregate),
+		Author:        NewAuthorService(repos.Author),
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/relationships"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 )
 
@@ -17,7 +18,7 @@ func NewBookAggregateService(repo repository.BookAggregateRepoInterface) *BookAg
 	}
 }
 
-func (s *BookAggregateService) GetAll(ctx context.Context, params forms.Pagination, relationships forms.Relations) ([]model.BookAggregate, error) {
+func (s *BookAggregateService) GetAll(ctx context.Context, params forms.Pagination, relationships relationships.Relations) ([]model.BookAggregate, error) {
 	books, err := s.repo.GetPage(ctx, params, relationships)
 	if err != nil {
 		return nil, err
@@ -25,7 +26,7 @@ func (s *BookAggregateService) GetAll(ctx context.Context, params forms.Paginati
 	return books, nil
 }
 
-func (s *BookAggregateService) GetById(ctx context.Context, bookId uint64, relations forms.Relations) (*model.BookAggregate, error) {
+func (s *BookAggregateService) GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.BookAggregate, error) {
 	book, err := s.repo.GetById(ctx, bookId, relations)
 	if err != nil {
 		return nil, err

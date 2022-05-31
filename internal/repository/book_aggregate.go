@@ -5,6 +5,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/relationships"
 	"github.com/tsenart/nap"
 	"golang.org/x/exp/slices"
 )
@@ -17,7 +18,7 @@ func NewBookAggregateRepository(db *nap.DB) *BookAggregateRepository {
 	return &BookAggregateRepository{db: db}
 }
 
-func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error) {
+func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.BookAggregate, error) {
 	var (
 		books []model.BookAggregate
 		scan  []interface{}
@@ -27,13 +28,13 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 	     books.description, books.link, books.in_stock, books.created_at, books.updated_at 
 		`).
 		From(bookTableName)
-	withAuthors := slices.Contains(relations, forms.AuthorRel)
+	withAuthors := slices.Contains(relations, relationships.AuthorRel)
 	if withAuthors {
 		b = b.Columns(`json_agg(author.*) as authors`).
 			LeftJoin("author_books on books.id = author_books.book_id").
 			LeftJoin("author on author.id = author_books.author_id")
 	}
-	withPublishHouse := slices.Contains(relations, forms.PublishHouseRel)
+	withPublishHouse := slices.Contains(relations, relationships.PublishHouseRel)
 	if withPublishHouse {
 		b = b.Columns(`house_publishes.id, house_publishes.name,
 			house_publishes.created_at, house_publishes.updated_at`).
@@ -102,7 +103,7 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 	return books, nil
 }
 
-func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, relations forms.Relations) (*model.BookAggregate, error) {
+func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.BookAggregate, error) {
 	var (
 		err error
 	)
@@ -125,7 +126,7 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 		From(bookTableName).
 		Where(sq.Eq{"books.id": id})
 
-	if slices.Contains(relations, forms.AuthorRel) {
+	if slices.Contains(relations, relationships.AuthorRel) {
 		book.Relations.BookAuthors = model.BookAuthors{}
 		scan = append(
 			scan,
@@ -137,7 +138,7 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 			LeftJoin("author on author.id = author_books.author_id")
 	}
 
-	if slices.Contains(relations, forms.PublishHouseRel) {
+	if slices.Contains(relations, relationships.PublishHouseRel) {
 		book.Relations.BookHousePublishes = &model.BookHousePublishes{}
 		scan = append(
 			scan,

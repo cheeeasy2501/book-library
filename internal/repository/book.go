@@ -119,14 +119,12 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 	query, args, err := builder.
 		Insert(bookTableName).
-		Columns(`house_publish_id, title, description, link, in_stock, created_at, updated_at`).
+		Columns(`house_publish_id, title, description, link, in_stock`).
 		Values(
 			book.Title,
 			book.Description,
 			book.Link,
 			book.InStock,
-			book.CreatedAt,
-			book.UpdatedAt,
 		).
 		Suffix("RETURNING id, created_at, updated_at").
 		ToSql()
@@ -162,7 +160,7 @@ func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 		Set("description", book.Description).
 		Set("link", book.Link).
 		Set("updated_at", book.UpdatedAt).
-		Suffix("RETURNING created_at").
+		Suffix("RETURNING updated_at").
 		Where(sq.Eq{"id": book.Id}).
 		ToSql()
 	if err != nil {
@@ -176,7 +174,7 @@ func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 	defer stmt.Close()
 
 	result := stmt.QueryRow(args...)
-	err = result.Scan(&book.CreatedAt)
+	err = result.Scan(&book.UpdatedAt)
 	if err != nil {
 		return err
 	}

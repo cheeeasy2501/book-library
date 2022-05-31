@@ -1,4 +1,4 @@
-package forms
+package relationships
 
 import (
 	"github.com/stretchr/testify/assert"

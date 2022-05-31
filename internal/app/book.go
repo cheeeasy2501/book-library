@@ -4,6 +4,7 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/relationships"
 	"github.com/gin-gonic/gin"
 	"strconv"
 	"time"
@@ -25,26 +26,26 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: repeated code with relations - move to func
-	relationStruct := forms.Relationships{}
+	relations := relationships.Relations{}
 	relationsQuery, ok := ctx.GetQuery("relations")
 	if ok {
-		err = relationStruct.UnmarshalText([]byte(relationsQuery))
+		err = relations.UnmarshalText([]byte(relationsQuery))
 		if err != nil {
 			return
 		}
 	}
 
-	relations := relationStruct.Relations.FilterRelations(forms.GetBookRelations())
-
-	if len(relations) != 0 {
-		books, err := a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
+	switch len(relations) {
+	case 0:
+		var books []model.Book
+		books, err = a.service.Book.GetAll(ctx, paginateForm)
 		if err != nil {
 			return
 		}
 		a.SendResponse(ctx, books)
-	} else {
-		books, err := a.service.Book.GetAll(ctx, paginateForm)
+	default:
+		var books []model.BookAggregate
+		books, err = a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
 		if err != nil {
 			return
 		}
@@ -64,30 +65,31 @@ func (a *App) GetBook(ctx *gin.Context) {
 	form := forms.GetBook{}
 	err = ctx.BindUri(&form)
 
-	// TODO: repeated code with relations - move to func
-	relationStruct := forms.Relationships{}
+	relations := relationships.Relations{}
 	relationsQuery, ok := ctx.GetQuery("relations")
 	if ok {
-		err = relationStruct.UnmarshalText([]byte(relationsQuery))
+		err = relations.UnmarshalText([]byte(relationsQuery))
 		if err != nil {
 			return
 		}
 	}
+	count := len(relations)
 
-	relations := relationStruct.Relations.FilterRelations(forms.GetBookRelations())
-
-	if len(relations) != 0 {
-		books, err := a.service.BookAggregate.GetById(ctx, form.Id, relations)
+	switch count {
+	case 0:
+		var book *model.Book
+		book, err = a.service.Book.GetById(ctx, form.Id)
+		a.SendResponse(ctx, book)
 		if err != nil {
 			return
 		}
-		a.SendResponse(ctx, books)
-	} else {
-		books, err := a.service.Book.GetById(ctx, form.Id)
+	default:
+		var book *model.BookAggregate
+		book, err = a.service.BookAggregate.GetById(ctx, form.Id, relations)
 		if err != nil {
 			return
 		}
-		a.SendResponse(ctx, books)
+		a.SendResponse(ctx, book)
 	}
 }
 

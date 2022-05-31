@@ -1,19 +1,12 @@
-package forms
+package relationships
 
 import (
 	"bytes"
-	"golang.org/x/exp/slices"
 	"strings"
 )
 
-//TODO: WORK WITH RELATION.
-type (
-	Relation      string
-	Relations     []Relation
-	Relationships struct {
-		Relations `form:"relations"`
-	}
-)
+type Relation string
+type Relations []Relation
 
 // implements encoding.TextUnmarshaler
 func (r *Relations) UnmarshalText(data []byte) error {
@@ -73,20 +66,5 @@ func (r Relations) MarshalJSON() ([]byte, error) {
 const (
 	AuthorRel       = Relation("authors")
 	PublishHouseRel = Relation("publish_house")
+	BookRelation    = Relation("books")
 )
-
-func (r *Relations) FilterRelations(relations []Relation) []Relation {
-	filteredRelations := []Relation{}
-	for _, value := range *r {
-		if slices.Contains(relations, value) {
-			filteredRelations = append(filteredRelations, value)
-		}
-	}
-
-	return filteredRelations
-}
-
-// Relations
-func GetBookRelations() []Relation {
-	return []Relation{AuthorRel, PublishHouseRel}
-}
