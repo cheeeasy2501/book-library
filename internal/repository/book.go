@@ -51,7 +51,9 @@ func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Paginatio
 
 	for rows.Next() {
 		book := model.Book{}
-		err = rows.Scan(&book.Id,
+		err = rows.Scan(
+			&book.Id,
+			&book.HousePublishId,
 			&book.Title,
 			&book.Description,
 			&book.Link,
@@ -95,6 +97,7 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 	err = stmt.QueryRow(args...).
 		Scan(
 			&book.Id,
+			&book.HousePublishId,
 			&book.Title,
 			&book.Description,
 			&book.Link,

@@ -131,7 +131,7 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 			scan,
 			&book.Relations.BookAuthors,
 		)
-		// json_agg not working with timestamp author.created_at, author.updated_at
+
 		b = b.Columns(`json_agg(author.*) as authors`).
 			LeftJoin("author_books on books.id = author_books.book_id").
 			LeftJoin("author on author.id = author_books.author_id")
