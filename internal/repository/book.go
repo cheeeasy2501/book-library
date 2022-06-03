@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	bookTableName = "books"
+	BookTableName = "books"
 )
 
 type BookRepository struct {
@@ -30,7 +30,7 @@ func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Paginatio
 	query, args, err := builder.
 		Select(`books.id, books.house_publish_id, books.title, books.description, 
 		books.link, books.in_stock, books.created_at, books.updated_at`).
-		From(bookTableName).
+		From(BookTableName).
 		Limit(paginator.Limit).
 		Offset(paginator.GetOffset()).
 		ToSql()
@@ -81,8 +81,8 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 	query, args, err := builder.
 		Select(`books.id, books.house_publish_id, books.title, books.description, 
 		books.link, books.in_stock, books.created_at, books.updated_at`).
-		From(bookTableName).
-		Where(sq.Eq{"id": id}).
+		From(BookTableName).
+		Where(sq.Eq{"books.id": id}).
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64) (*model.Book, 
 
 func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 	query, args, err := builder.
-		Insert(bookTableName).
+		Insert(BookTableName).
 		Columns(`house_publish_id, title, description, link, in_stock`).
 		Values(
 			book.Title,
@@ -154,7 +154,7 @@ func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 
 func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 	query, args, err := builder.
-		Update(bookTableName).
+		Update(BookTableName).
 		Set("house_publish_id", book.HousePublishId).
 		Set("title", book.Title).
 		Set("description", book.Description).
@@ -184,7 +184,7 @@ func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 
 func (br *BookRepository) Delete(ctx context.Context, id uint64) error {
 	query, args, err := builder.
-		Delete(bookTableName).
+		Delete(BookTableName).
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {

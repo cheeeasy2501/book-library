@@ -10,13 +10,13 @@ type Author struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Timestamp
-	Books AuthorBooks `json:"books,omitempty"`
+	Books Books `json:"books,omitempty"`
 }
 
-type AuthorBooks []Book
+type Books []Book
 
 // impliment sql.Scanner
-func (ab *AuthorBooks) Scan(src interface{}) error {
+func (ab *Books) Scan(src interface{}) error {
 	bts, ok := src.([]byte)
 	if !ok {
 		return errors.New("Error Scanning Array")

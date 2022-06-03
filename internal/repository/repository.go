@@ -45,12 +45,18 @@ type AuthorRepoInterface interface {
 	Delete(ctx context.Context, id uint64) error
 }
 
+type AuthorBooksRepoInterface interface {
+	Attach(ctx context.Context, authorId, bookId uint64) error
+	Detach(ctx context.Context, authorId, bookId uint64) error
+}
+
 // TODO add all interfaces for repo there
 type Repository struct {
 	User          UserRepoInterface
 	Book          BookRepoInterface
 	BookAggregate BookAggregateRepoInterface
 	Author        AuthorRepoInterface
+	AuthorBooks   AuthorBooksRepoInterface
 }
 
 func NewRepository(db *nap.DB) *Repository {
@@ -59,5 +65,6 @@ func NewRepository(db *nap.DB) *Repository {
 		Book:          NewBookRepository(db),
 		BookAggregate: NewBookAggregateRepository(db),
 		Author:        NewAuthorRepository(db),
+		AuthorBooks:   NewAuthorBooksRepository(db),
 	}
 }

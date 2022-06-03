@@ -11,6 +11,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const (
+	AuthorBooksTableName = "author_books"
+)
+
 type BookAggregateRepository struct {
 	db *nap.DB
 	tx *sql.Tx
@@ -42,7 +46,7 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 	b := builder.Select(`books.id, books.house_publish_id, books.title, 
 	     books.description, books.link, books.in_stock, books.created_at, books.updated_at 
 		`).
-		From(bookTableName)
+		From(BookTableName)
 	withAuthors := slices.Contains(relations, relationships.AuthorRel)
 	if withAuthors {
 		b = b.Columns(`json_agg(author.*) as authors`).
@@ -93,7 +97,7 @@ func (bar *BookAggregateRepository) GetPage(ctx context.Context, paginator forms
 		if withAuthors {
 			scan = append(
 				scan,
-				&book.Relations.BookAuthors,
+				&book.Relations.Authors,
 			)
 		}
 
@@ -138,14 +142,14 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 	b := builder.Select(`books.id, books.house_publish_id, books.title, 
 	     books.description, books.link, books.in_stock, books.created_at, books.updated_at 
 		`).
-		From(bookTableName).
+		From(BookTableName).
 		Where(sq.Eq{"books.id": id})
 
 	if slices.Contains(relations, relationships.AuthorRel) {
-		book.Relations.BookAuthors = model.BookAuthors{}
+		book.Relations.Authors = model.Authors{}
 		scan = append(
 			scan,
-			&book.Relations.BookAuthors,
+			&book.Relations.Authors,
 		)
 
 		b = b.Columns(`json_agg(author.*) as authors`).
@@ -203,7 +207,8 @@ func (bar *BookAggregateRepository) Create(ctx context.Context, book *model.Book
 		}
 	}()
 	bookQuery, bookArgs, err := builder.
-		Insert(bookTableName).
+		Insert(BookTableName).
+		Columns("house_publish_id", "title", "description", "link", "in_stock").
 		Values(
 			book.HousePublishId,
 			book.Title,
@@ -223,16 +228,36 @@ func (bar *BookAggregateRepository) Create(ctx context.Context, book *model.Book
 	}
 	defer prepareContext.Close()
 
-	_, err = prepareContext.ExecContext(ctx, bookArgs...)
+	var bookId uint64
+	err = prepareContext.QueryRowContext(ctx, bookArgs...).Scan(&bookId)
 	if err != nil {
 		return err
 	}
-	if len(book.Relations.BookAuthors) != 0 {
-		for author := range book.Relations.BookAuthors {
-			//if author.Id != 0 { // TODO: complete these variant
-			_ = author
-			//}
+
+	if len(book.Relations.Authors) != 0 {
+		for _, author := range book.Relations.Authors {
+			authorQuery, authorArgs, err := builder.Insert(AuthorBooksTableName).
+				Columns("author_id", "book_id").
+				Values(
+					author.Id,
+					bookId,
+				).
+				ToSql()
+
+			stmt, err := tx.PrepareContext(ctx, authorQuery)
+			if err != nil {
+				return err
+			}
+			_, err = stmt.Exec(authorArgs...)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

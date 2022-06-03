@@ -95,13 +95,19 @@ func (a *App) GetBook(ctx *gin.Context) {
 
 func (a *App) CreateBook(ctx *gin.Context) {
 	var (
-		err  error
-		book *model.Book
+		err     error
+		book    *model.Book
+		authors *model.Authors
 	)
 
 	defer func() {
 		a.SendError(ctx, err)
 	}()
+
+	err = ctx.BindJSON(&authors)
+	if err != nil {
+		return
+	}
 
 	err = ctx.BindJSON(&book)
 	if err != nil {
