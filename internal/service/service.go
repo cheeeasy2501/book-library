@@ -25,17 +25,11 @@ type UserServiceInterface interface {
 }
 
 type BookServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination) ([]model.Book, error)
-	GetById(ctx context.Context, bookId uint64) (*model.Book, error)
+	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.Book, error)
+	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error
 	Delete(ctx context.Context, bookId uint64) error
-}
-
-type BookAggregateServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.BookAggregate, error)
-	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.BookAggregate, error)
-	Create(ctx context.Context, book *model.BookAggregate) (*model.BookAggregate, error)
 }
 
 type AuthorServiceInterface interface {
@@ -50,7 +44,6 @@ type Service struct {
 	Authorization AuthorizationServiceInterface
 	User          UserServiceInterface
 	Book          BookServiceInterface
-	BookAggregate BookAggregateServiceInterface
 	Author        AuthorServiceInterface
 }
 
@@ -59,7 +52,6 @@ func NewService(repos *repository.Repository) *Service {
 		Authorization: NewAuthorizationService(repos.User, "Secret"),
 		User:          NewUserService(repos.User),
 		Book:          NewBookService(repos.Book),
-		BookAggregate: NewBookAggregateService(repos.BookAggregate),
 		Author:        NewAuthorService(repos.Author),
 	}
 }

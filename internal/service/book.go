@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/relationships"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"time"
 )
@@ -18,13 +19,13 @@ func NewBookService(repo repository.BookRepoInterface) *BookService {
 	}
 }
 
-func (bs *BookService) GetAll(ctx context.Context, paginator forms.Pagination) ([]model.Book, error) {
+func (bs *BookService) GetAll(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error) {
 	var (
 		err   error
 		books []model.Book
 	)
 
-	books, err = bs.repo.GetPage(ctx, paginator)
+	books, err = bs.repo.GetPage(ctx, paginator, relations)
 	if err != nil {
 		return nil, err
 	}
@@ -32,8 +33,8 @@ func (bs *BookService) GetAll(ctx context.Context, paginator forms.Pagination) (
 	return books, nil
 }
 
-func (bs *BookService) GetById(ctx context.Context, bookId uint64) (*model.Book, error) {
-	book, err := bs.repo.GetById(ctx, bookId)
+func (bs *BookService) GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Book, error) {
+	book, err := bs.repo.GetById(ctx, bookId, relations)
 	if err != nil {
 		return nil, err
 	}

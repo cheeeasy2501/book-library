@@ -19,8 +19,8 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		a.SendError(ctx, err)
 	}()
 
-	paginateForm := forms.Pagination{}
-	err = ctx.BindQuery(&paginateForm)
+	pagination := forms.Pagination{}
+	err = ctx.BindQuery(&pagination)
 	if err != nil {
 		err = apperrors.ValidateError(err.Error())
 		return
@@ -35,22 +35,13 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		}
 	}
 
-	switch len(relations) {
-	case 0:
-		var books []model.Book
-		books, err = a.service.Book.GetAll(ctx, paginateForm)
-		if err != nil {
-			return
-		}
-		a.SendResponse(ctx, books)
-	default:
-		var books []model.BookAggregate
-		books, err = a.service.BookAggregate.GetAll(ctx, paginateForm, relations)
-		if err != nil {
-			return
-		}
-		a.SendResponse(ctx, books)
+	var books []model.Book
+	books, err = a.service.Book.GetAll(ctx, pagination, relations)
+	if err != nil {
+		return
 	}
+	a.SendResponse(ctx, books)
+
 }
 
 func (a *App) GetBook(ctx *gin.Context) {
@@ -73,24 +64,13 @@ func (a *App) GetBook(ctx *gin.Context) {
 			return
 		}
 	}
-	count := len(relations)
 
-	switch count {
-	case 0:
-		var book *model.Book
-		book, err = a.service.Book.GetById(ctx, form.Id)
-		a.SendResponse(ctx, book)
-		if err != nil {
-			return
-		}
-	default:
-		var book *model.BookAggregate
-		book, err = a.service.BookAggregate.GetById(ctx, form.Id, relations)
-		if err != nil {
-			return
-		}
-		a.SendResponse(ctx, book)
+	var book *model.Book
+	book, err = a.service.Book.GetById(ctx, form.Id, relations)
+	if err != nil {
+		return
 	}
+	a.SendResponse(ctx, book)
 }
 
 func (a *App) CreateBook(ctx *gin.Context) {
