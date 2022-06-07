@@ -11,18 +11,19 @@ import (
 )
 
 // GetBooks godoc
-// @Summary      Registration new account
-// @Description  Return user and token
+// @Summary      Get book collection
+// @Description  Return book collection
 // @Tags         books
 // @Accept       json
 // @Consume 	 json
-// @Param        page    query  string  false  "Page number"
-// @Param        limit    query  string  false  "Limit number"
+// @Param        page    query  int  true  "Page number"
+// @Param        limit    query  int  true  "Limit number"
 // @Param        relations    query  string  false  "Book relationships:publish_house,author"
 // @Success      200  {array}   model.Book
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
+// @Security     ApiKeyAuth
 // @Router       /books [get]
 func (a *App) GetBooks(ctx *gin.Context) {
 	var (
@@ -59,18 +60,18 @@ func (a *App) GetBooks(ctx *gin.Context) {
 }
 
 // GetBook godoc
-// @Summary      Registration new account
-// @Description  Return user and token
+// @Summary      Get book by id
+// @Description  Return book
 // @Tags         books
 // @Accept       json
 // @Consume 	 json
-// @Param        page    query  string  true  "Page number"
-// @Param        limit    query  string  true  "Limit number"
-// @Param        relations    query  string  true  "Book relationships:publish_house,author"
+// @Param        id    path  int  true  "Book ID"
+// @Param        relations    query  string  false  "Book relationships:authors,publish_house"
 // @Success      200  {object}  model.Book
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
+// @Security     ApiKeyAuth
 // @Router       /books/{id} [get]
 func (a *App) GetBook(ctx *gin.Context) {
 	var (
@@ -109,7 +110,7 @@ func (a *App) GetBook(ctx *gin.Context) {
 // @Consume 	 json
 // @Param        page    query  string  true  "Page number"
 // @Param        limit    query  string  true  "Limit number"
-// @Param        relations    query  string  true  "Book relationships:publish_house,author"
+// @Param        relations    query  string  true  "Book relationships:authors,publish_house"
 // @Success      200  {object}  model.Book
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError

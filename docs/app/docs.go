@@ -27,26 +27,33 @@ const docTemplate = `{
     "paths": {
         "/books": {
             "get": {
-                "description": "Return user and token",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Return book collection",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "books"
                 ],
-                "summary": "Registration new account",
+                "summary": "Get book collection",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Page number",
                         "name": "page",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Limit number",
                         "name": "limit",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "string",
@@ -86,37 +93,34 @@ const docTemplate = `{
                 }
             }
         },
-        "/books/:id": {
+        "/books/{id}": {
             "get": {
-                "description": "Return user and token",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Return book",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "books"
                 ],
-                "summary": "Registration new account",
+                "summary": "Get book by id",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query",
+                        "type": "integer",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Limit number",
-                        "name": "limit",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Book relationships:publish_house,author",
+                        "description": "Book relationships:authors,publish_house",
                         "name": "relations",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -388,6 +392,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

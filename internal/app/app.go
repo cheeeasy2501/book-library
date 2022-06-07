@@ -40,6 +40,10 @@ type HTTPError struct {
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 // @host      localhost:8080
 // @BasePath  /api/v1
 func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*App, error) {

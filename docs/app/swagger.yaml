@@ -111,16 +111,18 @@ paths:
     get:
       consumes:
       - application/json
-      description: Return user and token
+      description: Return book collection
       parameters:
       - description: Page number
         in: query
         name: page
-        type: string
+        required: true
+        type: integer
       - description: Limit number
         in: query
         name: limit
-        type: string
+        required: true
+        type: integer
       - description: Book relationships:publish_house,author
         in: query
         name: relations
@@ -144,29 +146,25 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/app.HTTPError'
-      summary: Registration new account
+      security:
+      - ApiKeyAuth: []
+      summary: Get book collection
       tags:
       - books
-  /books/:id:
+  /books/{id}:
     get:
       consumes:
       - application/json
-      description: Return user and token
+      description: Return book
       parameters:
-      - description: Page number
-        in: query
-        name: page
+      - description: Book ID
+        in: path
+        name: id
         required: true
-        type: string
-      - description: Limit number
-        in: query
-        name: limit
-        required: true
-        type: string
-      - description: Book relationships:publish_house,author
+        type: integer
+      - description: Book relationships:authors,publish_house
         in: query
         name: relations
-        required: true
         type: string
       responses:
         "200":
@@ -185,7 +183,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/app.HTTPError'
-      summary: Registration new account
+      security:
+      - ApiKeyAuth: []
+      summary: Get book by id
       tags:
       - books
   /signIn:
@@ -252,4 +252,9 @@ paths:
       summary: Registration new account
       tags:
       - authorization
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
