@@ -13,3 +13,7 @@ full_stop:
 
 migrate:
 	 migrate -path ./db/migration -database 'postgres://postgres:postgres@localhost:5432/books-library?sslmode=disable' $(c)
+
+make_swagger_docs:
+	swag init -o ../../docs/app -g app.go --parseDependency
+

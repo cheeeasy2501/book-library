@@ -12,7 +12,7 @@ services:
   postgres-master:
     image: postgres:14.2
     container_name: book-library-postgres-master
-    env_file: configs/.env.local
+    env_file: configs/postgres/master/.env.local
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}

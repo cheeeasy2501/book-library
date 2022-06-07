@@ -10,6 +10,20 @@ import (
 	"time"
 )
 
+// GetBooks godoc
+// @Summary      Registration new account
+// @Description  Return user and token
+// @Tags         books
+// @Accept       json
+// @Consume 	 json
+// @Param        page    query  string  false  "Page number"
+// @Param        limit    query  string  false  "Limit number"
+// @Param        relations    query  string  false  "Book relationships:publish_house,author"
+// @Success      200  {array}   model.Book
+// @Failure      400  {object}  HTTPError
+// @Failure      404  {object}  HTTPError
+// @Failure      500  {object}  HTTPError
+// @Router       /books [get]
 func (a *App) GetBooks(ctx *gin.Context) {
 	var (
 		err error
@@ -44,6 +58,20 @@ func (a *App) GetBooks(ctx *gin.Context) {
 
 }
 
+// GetBook godoc
+// @Summary      Registration new account
+// @Description  Return user and token
+// @Tags         books
+// @Accept       json
+// @Consume 	 json
+// @Param        page    query  string  true  "Page number"
+// @Param        limit    query  string  true  "Limit number"
+// @Param        relations    query  string  true  "Book relationships:publish_house,author"
+// @Success      200  {object}  model.Book
+// @Failure      400  {object}  HTTPError
+// @Failure      404  {object}  HTTPError
+// @Failure      500  {object}  HTTPError
+// @Router       /books/{id} [get]
 func (a *App) GetBook(ctx *gin.Context) {
 	var (
 		err error
@@ -73,6 +101,19 @@ func (a *App) GetBook(ctx *gin.Context) {
 	a.SendResponse(ctx, book)
 }
 
+// GetBook godoc
+// @Summary      Registration new account
+// @Description  Return user and token
+// @Tags         books
+// @Accept       json
+// @Consume 	 json
+// @Param        page    query  string  true  "Page number"
+// @Param        limit    query  string  true  "Limit number"
+// @Param        relations    query  string  true  "Book relationships:publish_house,author"
+// @Success      200  {object}  model.Book
+// @Failure      400  {object}  HTTPError
+// @Failure      404  {object}  HTTPError
+// @Failure      500  {object}  HTTPError
 func (a *App) CreateBook(ctx *gin.Context) {
 	var (
 		err  error

@@ -1,0 +1,255 @@
+basePath: /api/v1
+definitions:
+  app.HTTPError:
+    properties:
+      message:
+        type: string
+    type: object
+  app.SingInHandlerSuccess:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  forms.Credentials:
+    properties:
+      password:
+        example: administrator
+        type: string
+      username:
+        example: administrator
+        type: string
+    type: object
+  model.Author:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/model.Book'
+        type: array
+      created_at:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.Book:
+    properties:
+      authors:
+        items:
+          $ref: '#/definitions/model.Author'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      house_publish_id:
+        type: integer
+      house_publishes:
+        $ref: '#/definitions/model.BookHousePublishes'
+      id:
+        type: integer
+      in_stock:
+        type: integer
+      link:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - title
+    type: object
+  model.BookHousePublishes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Book Library Microservice
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Book Library API
+  version: "1.0"
+paths:
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Return user and token
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: string
+      - description: Limit number
+        in: query
+        name: limit
+        type: string
+      - description: Book relationships:publish_house,author
+        in: query
+        name: relations
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Book'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Registration new account
+      tags:
+      - books
+  /books/:id:
+    get:
+      consumes:
+      - application/json
+      description: Return user and token
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: Limit number
+        in: query
+        name: limit
+        required: true
+        type: string
+      - description: Book relationships:publish_house,author
+        in: query
+        name: relations
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Registration new account
+      tags:
+      - books
+  /signIn:
+    post:
+      consumes:
+      - application/json
+      description: Return user and token
+      parameters:
+      - description: Account username and password
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/forms.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SingInHandlerSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Login to account by username and password.
+      tags:
+      - authorization
+  /signUp:
+    post:
+      consumes:
+      - application/json
+      description: Return user and token
+      parameters:
+      - description: Account username and password
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/forms.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SingInHandlerSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Registration new account
+      tags:
+      - authorization
+swagger: "2.0"

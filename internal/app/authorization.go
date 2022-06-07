@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/forms"
+	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
@@ -11,6 +12,18 @@ const (
 	authorizationHeader = "Authorization"
 )
 
+// SignInHandler godoc
+// @Summary      Login to account by username and password.
+// @Description  Return user and token
+// @Tags         authorization
+// @Accept       json
+// @Consume 	 json
+// @Param        credentials    body    forms.Credentials  true  "Account username and password"
+// @Success      200  {object}  SingInHandlerSuccess
+// @Failure      400  {object}  HTTPError
+// @Failure      404  {object}  HTTPError
+// @Failure      500  {object}  HTTPError
+// @Router       /signIn [post]
 func (a *App) SignInHandler(ctx *gin.Context) {
 	var (
 		err         error
@@ -29,12 +42,26 @@ func (a *App) SignInHandler(ctx *gin.Context) {
 		return
 	}
 
-	a.SendResponse(ctx, gin.H{
-		"token": token,
-		"user":  user,
-	})
+	a.SendResponse(ctx, SingInHandlerSuccess{User: *user, Token: token})
 }
 
+type SingInHandlerSuccess struct {
+	User  model.User `json:"user"`
+	Token string     `json:"token"`
+}
+
+// SignInHandler godoc
+// @Summary      Registration new account
+// @Description  Return user and token
+// @Tags         authorization
+// @Accept       json
+// @Consume 	 json
+// @Param        credentials    body    forms.Credentials  true  "Account username and password"
+// @Success      200  {object}  SingInHandlerSuccess
+// @Failure      400  {object}  HTTPError
+// @Failure      404  {object}  HTTPError
+// @Failure      500  {object}  HTTPError
+// @Router       /signUp [post]
 func (a *App) SignUpHandler(ctx *gin.Context) {
 	var (
 		form *forms.CreateUser
