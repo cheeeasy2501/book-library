@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-// GetBooks godoc
-// @Summary      Get book collection
-// @Description  Return book collection
-// @Tags         books
+// Get authors godoc
+// @Summary      Get author collection
+// @Description  Return author collection
+// @Tags         author
 // @Accept       json
 // @Consume 	 json
 // @Param        page    query  int  true  "Page number"
 // @Param        limit    query  int  true  "Limit number"
-// @Param        relations    query  string  false  "Book relationships:publish_house,author"
-// @Success      200  {array}   model.Book
+// @Param        relations    query  string  false  "Author relationships:books"
+// @Success      200  {array}   model.Author
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
 // @Security     ApiKeyAuth
-// @Router       /books [get]
-func (a *App) GetBooks(ctx *gin.Context) {
+// @Router       /authors [get]
+func (a *App) GetAuthors(ctx *gin.Context) {
 	var (
 		err error
 	)
@@ -50,30 +50,29 @@ func (a *App) GetBooks(ctx *gin.Context) {
 		}
 	}
 
-	var books []model.Book
-	books, err = a.service.Book.GetAll(ctx, pagination, relations)
+	var authors []model.Author
+	authors, err = a.service.Author.GetAll(ctx, pagination, relations)
 	if err != nil {
 		return
 	}
-	a.SendResponse(ctx, books)
-
+	a.SendResponse(ctx, authors)
 }
 
-// GetBook godoc
-// @Summary      Get book by id
-// @Description  Return book
-// @Tags         books
+// GetAuthor godoc
+// @Summary      Get author by id
+// @Description  Return author
+// @Tags         author
 // @Accept       json
 // @Consume 	 json
-// @Param        id    path  int  true  "Book ID"
-// @Param        relations    query  string  false  "Book relationships:authors,publish_house"
-// @Success      200  {object}  model.Book
+// @Param        id    path  int  true  "Author id"
+// @Param        relations    query  string  false  "Author relationships:books"
+// @Success      200  {object}  model.Author
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
 // @Security     ApiKeyAuth
-// @Router       /books/{id} [get]
-func (a *App) GetBook(ctx *gin.Context) {
+// @Router       /authors/{id} [get]
+func (a *App) GetAuthor(ctx *gin.Context) {
 	var (
 		err error
 	)
@@ -82,7 +81,7 @@ func (a *App) GetBook(ctx *gin.Context) {
 		a.SendError(ctx, err)
 	}()
 
-	form := forms.GetBook{}
+	form := forms.GetAuthorForm{}
 	err = ctx.BindUri(&form)
 
 	relations := relationships.Relations{}
@@ -94,76 +93,76 @@ func (a *App) GetBook(ctx *gin.Context) {
 		}
 	}
 
-	var book *model.Book
-	book, err = a.service.Book.GetById(ctx, form.Id, relations)
+	var author *model.Author
+	author, err = a.service.Author.GetById(ctx, form.Id, relations)
 	if err != nil {
 		return
 	}
-	a.SendResponse(ctx, book)
+	a.SendResponse(ctx, author)
 }
 
-// CreateBook godoc
-// @Summary      Create new book
-// @Description  Create new book and return it
-// @Tags         books
+// CreateAuthor godoc
+// @Summary      Create new author
+// @Description  Create new author and return it
+// @Tags         author
 // @Accept       json
 // @Consume 	 json
-// @Param   	 request  body  model.Book     true  "Create book model"
-// @Success      200  {object}  model.Book
+// @Param   	 request  body  model.Author     true  "Create author model"
+// @Success      200  {object}  model.Author
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
 // @Security     ApiKeyAuth
-// @Router       /books [post]
-func (a *App) CreateBook(ctx *gin.Context) {
+// @Router       /authors [post]
+func (a *App) CreateAuthor(ctx *gin.Context) {
 	var (
-		err  error
-		book *model.Book
+		err    error
+		author *model.Author
 	)
 
 	defer func() {
 		a.SendError(ctx, err)
 	}()
 
-	err = ctx.BindJSON(&book)
+	err = ctx.BindJSON(&author)
 	if err != nil {
 		return
 	}
 
-	err = a.service.Book.Create(ctx, book)
+	err = a.service.Author.Create(ctx, author)
 	if err != nil {
 		return
 	}
 
-	a.SendResponse(ctx, book)
+	a.SendResponse(ctx, author)
 }
 
-// UpdateBook godoc
-// @Summary      Update book
-// @Description  Update book and return it
-// @Tags         books
+// UpdateAuthor godoc
+// @Summary      Update author
+// @Description  Update author and return it
+// @Tags         author
 // @Accept       json
 // @Consume 	 json
-// @Param   	 id  path  int     true  "Book id"
-// @Param   	 request  body  model.Book     true  "Update book model"
-// @Success      200  {object}  model.Book
+// @Param   	 id  path  int     true  "author id"
+// @Param   	 request  body  model.Author     true  "Update author model"
+// @Success      200  {object}  model.Author
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
 // @Security     ApiKeyAuth
-// @Router       /books/{id} [patch]
-func (a *App) UpdateBook(ctx *gin.Context) {
+// @Router       /authors/{id} [patch]
+func (a *App) UpdateAuthor(ctx *gin.Context) {
 	var (
-		err  error
-		book *model.Book
-		id   uint64
+		err    error
+		author *model.Author
+		id     uint64
 	)
 
 	defer func() {
 		a.SendError(ctx, err)
 	}()
 
-	err = ctx.BindJSON(&book)
+	err = ctx.BindJSON(&author)
 	if err != nil {
 		return
 	}
@@ -171,30 +170,30 @@ func (a *App) UpdateBook(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	book.Id = id
-	book.UpdatedAt = time.Now()
+	author.Id = id
+	author.UpdatedAt = time.Now()
 
-	err = a.service.Book.Update(ctx, book)
+	err = a.service.Author.Update(ctx, author)
 	if err != nil {
 		return
 	}
 
-	a.SendResponse(ctx, book)
+	a.SendResponse(ctx, author)
 }
 
-// DeleteBook godoc
-// @Summary      Delete book
-// @Description  Delete book by id
-// @Tags         books
+// Deleteauthor godoc
+// @Summary      Delete author
+// @Description  Delete author by id
+// @Tags         author
 // @Accept       json
 // @Consume 	 json
-// @Param   	 request  path    int     true  "Book id"
-// @Success      200  {object}  model.Book
+// @Param   	 request  path    int     true  "author id"
+// @Success      200  {object}  model.Author
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
-// @Router       /books/{id} [delete]
-func (a *App) DeleteBook(ctx *gin.Context) {
+// @Router       /authors/{id} [delete]
+func (a *App) DeleteAuthor(ctx *gin.Context) {
 	var (
 		err error
 		id  uint64
@@ -209,7 +208,7 @@ func (a *App) DeleteBook(ctx *gin.Context) {
 		return
 	}
 
-	err = a.service.Book.Delete(ctx, id)
+	err = a.service.Author.Delete(ctx, id)
 	if err != nil {
 		return
 	}

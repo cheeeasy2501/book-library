@@ -33,8 +33,8 @@ type BookServiceInterface interface {
 }
 
 type AuthorServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination) ([]model.Author, error)
-	GetById(ctx context.Context, bookId uint64) (*model.Author, error)
+	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.Author, error)
+	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Author, error)
 	Create(ctx context.Context, book *model.Author) error
 	Update(ctx context.Context, book *model.Author) error
 	Delete(ctx context.Context, bookId uint64) error

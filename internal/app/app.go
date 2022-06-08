@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	_ "github.com/cheeeasy2501/book-library/docs/app"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/config"
@@ -70,16 +69,27 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 		routes.GET("swagger", func(context *gin.Context) {
 			context.Redirect(http.StatusPermanentRedirect, "api/v1/swagger/index.html")
 		})
-		fmt.Println(routes.BasePath())
 		routes.POST("signIn", application.SignInHandler)
 		routes.POST("signUp", application.SignUpHandler)
-		books := routes.Group("books", application.ValidateTokenMiddleware)
+		secureRoutes := routes.Group("", application.ValidateTokenMiddleware)
 		{
-			books.GET("/", application.GetBooks)
-			books.GET("/:id", application.GetBook)
-			books.POST("/", application.CreateBook)
-			books.PATCH("/:id", application.UpdateBook)
-			books.DELETE("/:id", application.DeleteBook)
+			books := secureRoutes.Group("books")
+			{
+				books.GET("/", application.GetBooks)
+				books.GET("/:id", application.GetBook)
+				books.POST("/", application.CreateBook)
+				books.PATCH("/:id", application.UpdateBook)
+				books.DELETE("/:id", application.DeleteBook)
+			}
+			authors := secureRoutes.Group("authors")
+			{
+				authors.GET("/", application.GetAuthors)
+				authors.GET("/:id", application.GetAuthor)
+				authors.POST("/", application.CreateAuthor)
+				authors.PATCH("/:id", application.UpdateAuthor)
+				authors.DELETE("/:id", application.DeleteAuthor)
+			}
+
 		}
 	}
 
