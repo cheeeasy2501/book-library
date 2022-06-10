@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/relationships"
@@ -10,22 +11,34 @@ import (
 )
 
 type BookService struct {
-	repo repository.BookRepoInterface
+	db               *database.Database
+	bookRepository   repository.BookRepoInterface
+	authorRepository repository.AuthorRepoInterface
 }
 
-func NewBookService(repo repository.BookRepoInterface) *BookService {
+func NewBookService(db *database.Database, book repository.BookRepoInterface, author repository.AuthorRepoInterface) *BookService {
 	return &BookService{
-		repo: repo,
+		db:               db,
+		bookRepository:   book,
+		authorRepository: author,
 	}
 }
 
-func (bs *BookService) GetAll(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error) {
+func (s *BookService) GetAll(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error) {
 	var (
 		err   error
 		books []model.Book
 	)
 
-	books, err = bs.repo.GetPage(ctx, paginator, relations)
+	ctx, finish, err := s.db.TxSession(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		finish(err)
+	}()
+
+	books, err = s.bookRepository.GetPage(ctx, paginator, relations)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +46,8 @@ func (bs *BookService) GetAll(ctx context.Context, paginator forms.Pagination, r
 	return books, nil
 }
 
-func (bs *BookService) GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Book, error) {
-	book, err := bs.repo.GetById(ctx, bookId, relations)
+func (s *BookService) GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Book, error) {
+	book, err := s.bookRepository.GetById(ctx, bookId, relations)
 	if err != nil {
 		return nil, err
 	}
@@ -42,28 +55,28 @@ func (bs *BookService) GetById(ctx context.Context, bookId uint64, relations rel
 	return book, nil
 }
 
-func (bs *BookService) Create(ctx context.Context, book *model.Book) error {
+func (s *BookService) Create(ctx context.Context, book *model.Book) error {
 	currentTime := time.Now()
 	book.CreatedAt = currentTime
 	book.UpdatedAt = currentTime
-	err := bs.repo.Create(ctx, book)
+	err := s.bookRepository.Create(ctx, book)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (bs *BookService) Update(ctx context.Context, book *model.Book) error {
+func (s *BookService) Update(ctx context.Context, book *model.Book) error {
 	book.UpdatedAt = time.Now()
-	err := bs.repo.Update(ctx, book)
+	err := s.bookRepository.Update(ctx, book)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (bs *BookService) Delete(ctx context.Context, bookId uint64) error {
-	err := bs.repo.Delete(ctx, bookId)
+func (s *BookService) Delete(ctx context.Context, bookId uint64) error {
+	err := s.bookRepository.Delete(ctx, bookId)
 	if err != nil {
 		return err
 	}

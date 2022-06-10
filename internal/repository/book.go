@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/relationships"
-	"github.com/tsenart/nap"
 	"golang.org/x/exp/slices"
 	"time"
 )
@@ -22,54 +22,43 @@ const (
 )
 
 type BookRepository struct {
-	db *nap.DB
+	db *database.Database
 }
 
-func (br *BookRepository) GetTx(ctx context.Context) (*sql.Tx, error) {
-	return br.db.BeginTx(ctx, nil)
-}
-
-func NewBookRepository(db *nap.DB) *BookRepository {
+func NewBookRepository(db *database.Database) *BookRepository {
 	return &BookRepository{db: db}
 }
 
-func (br *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error) {
+func (r *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error) {
 	var (
 		books []model.Book
 		scan  []interface{}
 	)
 
 	b := builder.Select(`books.id, books.house_publish_id, books.title, 
-	     books.description, books.link, books.in_stock, books.created_at, books.updated_at 
-		`).
+	     books.description, books.link, books.in_stock, books.created_at, books.updated_at`).
 		From(BookTableName)
-	withAuthors := slices.Contains(relations, relationships.AuthorRel)
-	if withAuthors {
-		b = b.Columns(`json_agg(author.*) as authors`).
-			LeftJoin("author_books on books.id = author_books.book_id").
-			LeftJoin("author on author.id = author_books.author_id")
-	}
-	withPublishHouse := slices.Contains(relations, relationships.PublishHouseRel)
-	if withPublishHouse {
-		b = b.Columns(`house_publishes.id, house_publishes.name,
-			house_publishes.created_at, house_publishes.updated_at`).
-			LeftJoin("house_publishes on books.house_publish_id = house_publishes.id").
-			GroupBy("house_publishes.id")
-	}
+	//withAuthors := slices.Contains(relations, relationships.AuthorRel)
+	//if withAuthors {
+	//	b = b.Columns(`json_agg(author.*) as authors`).
+	//		LeftJoin("author_books on books.id = author_books.book_id").
+	//		LeftJoin("author on author.id = author_books.author_id")
+	//}
+	//withPublishHouse := slices.Contains(relations, relationships.PublishHouseRel)
+	//if withPublishHouse {
+	//	b = b.Columns(`house_publishes.id, house_publishes.name,
+	//		house_publishes.created_at, house_publishes.updated_at`).
+	//		LeftJoin("house_publishes on books.house_publish_id = house_publishes.id").
+	//		GroupBy("house_publishes.id")
+	//}
 	query, args, err := b.
-		GroupBy("books.id").
-		Offset(paginator.GetOffset()).
+		//GroupBy("books.id").
+		Offset(paginator.Offset).
 		Limit(paginator.Limit).
 		ToSql()
 	if err != nil {
 		return nil, err
 	}
-
-	stmt, err := br.db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
 
 	rows, err := stmt.Query(args...)
 	if err != nil {
@@ -264,7 +253,6 @@ func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 			if err != nil {
 				return err
 			}
-			//TODO: not scanned , transaction?
 			err = stmt.QueryRow(args...).Scan(
 				&author.FirstName,
 				&author.LastName,

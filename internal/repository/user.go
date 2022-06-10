@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
-	"github.com/tsenart/nap"
 	"time"
 )
 
@@ -16,16 +16,16 @@ const (
 )
 
 type UserRepository struct {
-	db *nap.DB
+	db *database.Database
 }
 
-func NewUserRepository(db *nap.DB) *UserRepository {
+func NewUserRepository(db *database.Database) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
-func (ur UserRepository) GetPage(ctx context.Context, paginator forms.Pagination) ([]model.User, error) {
+func (r *UserRepository) GetPage(ctx context.Context, paginator forms.Pagination) ([]model.User, error) {
 	var (
 		err      error
 		users    []model.User
@@ -41,8 +41,11 @@ func (ur UserRepository) GetPage(ctx context.Context, paginator forms.Pagination
 	if err != nil {
 		return nil, err
 	}
-
-	stmt, err := ur.db.PrepareContext(ctx, query)
+	ctx, saveFunc, err := r.db.TxSession(ctx)
+	if err != nil {
+		return nil, err
+	}
+	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

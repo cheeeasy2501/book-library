@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/tsenart/nap"
+	"github.com/cheeeasy2501/book-library/internal/database"
 )
 
 // Work with auhtor_books table
@@ -16,10 +16,10 @@ const (
 )
 
 type AuthorBooks struct {
-	db *nap.DB
+	db *database.Database
 }
 
-func NewAuthorBooksRepository(db *nap.DB) *AuthorBooks {
+func NewAuthorBooksRepository(db *database.Database) *AuthorBooks {
 	return &AuthorBooks{
 		db: db,
 	}

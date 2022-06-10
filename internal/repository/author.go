@@ -4,10 +4,10 @@ import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/relationships"
-	"github.com/tsenart/nap"
 	"golang.org/x/exp/slices"
 )
 
@@ -16,10 +16,10 @@ const (
 )
 
 type Author struct {
-	db *nap.DB
+	db *database.Database
 }
 
-func NewAuthorRepository(db *nap.DB) *Author {
+func NewAuthorRepository(db *database.Database) *Author {
 	return &Author{
 		db: db,
 	}

@@ -2,12 +2,11 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/relationships"
-	"github.com/tsenart/nap"
 )
 
 var builder = sq.StatementBuilderType{}.PlaceholderFormat(sq.Dollar)
@@ -22,7 +21,6 @@ type UserRepoInterface interface {
 }
 
 type BookRepoInterface interface {
-	GetTx(ctx context.Context) (*sql.Tx, error)
 	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error)
 	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
@@ -51,7 +49,7 @@ type Repository struct {
 	AuthorBooks AuthorBooksRepoInterface
 }
 
-func NewRepository(db *nap.DB) *Repository {
+func NewRepository(db *database.Database) *Repository {
 	return &Repository{
 		User:        NewUserRepository(db),
 		Book:        NewBookRepository(db),

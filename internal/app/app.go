@@ -46,13 +46,16 @@ type HTTPError struct {
 // @host      localhost:8080
 // @BasePath  /api/v1
 func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*App, error) {
-	// create and open new connection
-	connection, err := database.NewDatabaseConnection(cnf.Database)
+	db := database.NewDatabase(cnf.Database)
+	err := db.OpenConnection()
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
 	engine := gin.Default()
-	repos := repository.NewRepository(connection)
+	repos := repository.NewRepository(db)
 	services := service.NewService(repos)
 
 	application := &App{
