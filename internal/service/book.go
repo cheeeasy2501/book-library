@@ -26,22 +26,29 @@ func NewBookService(db *database.Database, book repository.BookRepoInterface, au
 
 func (s *BookService) GetAll(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error) {
 	var (
-		err   error
-		books []model.Book
+		err     error
+		bookIds []uint64
+		books   []model.Book
+		authors model.Authors
 	)
-
-	ctx, finish, err := s.db.TxSession(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		finish(err)
-	}()
 
 	books, err = s.bookRepository.GetPage(ctx, paginator, relations)
 	if err != nil {
 		return nil, err
 	}
+
+	for i := 0; i < len(books); i++ {
+
+	}
+
+	authors, err = s.authorRepository.GetAuthorsByBooksIds(ctx, bookIds)
+	if err != nil {
+		return nil, err
+	}
+
+	//for  {
+	//
+	//}
 
 	return books, nil
 }

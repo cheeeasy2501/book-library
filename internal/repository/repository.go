@@ -34,6 +34,9 @@ type AuthorRepoInterface interface {
 	Create(ctx context.Context, book *model.Author) error
 	Update(ctx context.Context, book *model.Author) error
 	Delete(ctx context.Context, id uint64) error
+
+	GetAuthorsByBookId(ctx context.Context, id uint64) (model.Authors, error)
+	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) (model.Authors, error)
 }
 
 type AuthorBooksRepoInterface interface {

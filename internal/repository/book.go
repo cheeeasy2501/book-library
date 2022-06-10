@@ -2,14 +2,12 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/relationships"
-	"golang.org/x/exp/slices"
 	"time"
 )
 
@@ -60,7 +58,7 @@ func (r *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination
 		return nil, err
 	}
 
-	rows, err := stmt.Query(args...)
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,23 +77,23 @@ func (r *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination
 			&book.UpdatedAt,
 		}
 
-		if withAuthors {
-			scan = append(
-				scan,
-				&book.Authors,
-			)
-		}
-
-		if withPublishHouse {
-			book.BookHousePublishes = &model.BookHousePublishes{}
-			scan = append(
-				scan,
-				&book.BookHousePublishes.Id,
-				&book.BookHousePublishes.Name,
-				&book.BookHousePublishes.CreatedAt,
-				&book.BookHousePublishes.UpdatedAt,
-			)
-		}
+		//if withAuthors {
+		//	scan = append(
+		//		scan,
+		//		&book.Authors,
+		//	)
+		//}
+		//
+		//if withPublishHouse {
+		//	book.BookHousePublishes = &model.BookHousePublishes{}
+		//	scan = append(
+		//		scan,
+		//		&book.BookHousePublishes.Id,
+		//		&book.BookHousePublishes.Name,
+		//		&book.BookHousePublishes.CreatedAt,
+		//		&book.BookHousePublishes.UpdatedAt,
+		//	)
+		//}
 
 		err = rows.Scan(scan...)
 		if err != nil {
@@ -107,7 +105,7 @@ func (r *BookRepository) GetPage(ctx context.Context, paginator forms.Pagination
 	return books, nil
 }
 
-func (br *BookRepository) GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Book, error) {
+func (r *BookRepository) GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Book, error) {
 	var (
 		err error
 	)
@@ -130,50 +128,40 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64, relations rela
 		From(BookTableName).
 		Where(sq.Eq{"books.id": id})
 
-	if slices.Contains(relations, relationships.AuthorRel) {
-		book.Authors = model.Authors{}
-		scan = append(
-			scan,
-			&book.Authors,
-		)
-
-		b = b.Columns(`json_agg(author.*) as authors`).
-			LeftJoin("author_books on books.id = author_books.book_id").
-			LeftJoin("author on author.id = author_books.author_id")
-	}
-
-	if slices.Contains(relations, relationships.PublishHouseRel) {
-		book.BookHousePublishes = &model.BookHousePublishes{}
-		scan = append(
-			scan,
-			&book.BookHousePublishes.Id,
-			&book.BookHousePublishes.Name,
-			&book.BookHousePublishes.CreatedAt,
-			&book.BookHousePublishes.UpdatedAt,
-		)
-		b = b.Columns(`house_publishes.id, house_publishes.name,
-			house_publishes.created_at, house_publishes.updated_at`).
-			LeftJoin("house_publishes on books.house_publish_id = house_publishes.id").
-			GroupBy("house_publishes.id")
-	}
+	//if slices.Contains(relations, relationships.AuthorRel) {
+	//	book.Authors = model.Authors{}
+	//	scan = append(
+	//		scan,
+	//		&book.Authors,
+	//	)
+	//
+	//	b = b.Columns(`json_agg(author.*) as authors`).
+	//		LeftJoin("author_books on books.id = author_books.book_id").
+	//		LeftJoin("author on author.id = author_books.author_id")
+	//}
+	//
+	//if slices.Contains(relations, relationships.PublishHouseRel) {
+	//	book.BookHousePublishes = &model.BookHousePublishes{}
+	//	scan = append(
+	//		scan,
+	//		&book.BookHousePublishes.Id,
+	//		&book.BookHousePublishes.Name,
+	//		&book.BookHousePublishes.CreatedAt,
+	//		&book.BookHousePublishes.UpdatedAt,
+	//	)
+	//	b = b.Columns(`house_publishes.id, house_publishes.name,
+	//		house_publishes.created_at, house_publishes.updated_at`).
+	//		LeftJoin("house_publishes on books.house_publish_id = house_publishes.id").
+	//		GroupBy("house_publishes.id")
+	//}
 	query, args, err := b.GroupBy("books.id").
 		ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	stmt, err := br.db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
+	err = r.db.QueryRowContext(ctx, query, args...).Scan(scan...)
 
-	row := stmt.QueryRow(args...)
-	if err != nil {
-		return nil, err
-	}
-
-	err = row.Scan(scan...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,19 +169,8 @@ func (br *BookRepository) GetById(ctx context.Context, id uint64, relations rela
 	return book, nil
 }
 
-func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
-	tx, err := br.GetTx(ctx)
-	if err != nil {
-		return err
-	}
-	defer func(tx *sql.Tx) {
-		if err != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return
-			}
-		}
-	}(tx)
+func (r *BookRepository) Create(ctx context.Context, book *model.Book) error {
+	tx := r.db.GetTxSession(ctx)
 	now := time.Now()
 	query, args, err := builder.
 		Insert(BookTableName).
@@ -213,68 +190,62 @@ func (br *BookRepository) Create(ctx context.Context, book *model.Book) error {
 		return err
 	}
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	err = stmt.QueryRowContext(ctx, args...).Scan(&book.Id, &book.CreatedAt, &book.UpdatedAt)
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&book.Id, &book.CreatedAt, &book.UpdatedAt)
 	if err != nil {
 		return err
 	}
 
-	if len(book.Authors) != 0 {
-		for _, author := range book.Authors {
-			query, args, err = builder.Insert(AuthorBooksTableName).
-				Columns("author_id", "book_id").
-				Values(
-					author.Id,
-					book.Id,
-				).
-				ToSql()
-
-			stmt, err = tx.PrepareContext(ctx, query)
-			if err != nil {
-				return err
-			}
-
-			_, err = stmt.Exec(args...)
-			if err != nil {
-				return err
-			}
-
-			query, args, err = builder.
-				Select("firstname, lastname, created_at, updated_at").
-				From(AuthorTableName).
-				Where(sq.Eq{"id": author.Id}).
-				ToSql()
-			stmt, err = tx.Prepare(query)
-			if err != nil {
-				return err
-			}
-			err = stmt.QueryRow(args...).Scan(
-				&author.FirstName,
-				&author.LastName,
-				&author.CreatedAt,
-				&author.UpdatedAt,
-			)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	defer stmt.Close()
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
+	//if len(book.Authors) != 0 {
+	//	for _, author := range book.Authors {
+	//		query, args, err = builder.Insert(AuthorBooksTableName).
+	//			Columns("author_id", "book_id").
+	//			Values(
+	//				author.Id,
+	//				book.Id,
+	//			).
+	//			ToSql()
+	//
+	//		stmt, err = tx.PrepareContext(ctx, query)
+	//		if err != nil {
+	//			return err
+	//		}
+	//
+	//		_, err = stmt.Exec(args...)
+	//		if err != nil {
+	//			return err
+	//		}
+	//
+	//		query, args, err = builder.
+	//			Select("firstname, lastname, created_at, updated_at").
+	//			From(AuthorTableName).
+	//			Where(sq.Eq{"id": author.Id}).
+	//			ToSql()
+	//		stmt, err = tx.Prepare(query)
+	//		if err != nil {
+	//			return err
+	//		}
+	//		err = stmt.QueryRow(args...).Scan(
+	//			&author.FirstName,
+	//			&author.LastName,
+	//			&author.CreatedAt,
+	//			&author.UpdatedAt,
+	//		)
+	//		if err != nil {
+	//			return err
+	//		}
+	//	}
+	//}
+	//defer stmt.Close()
+	//
+	//err = tx.Commit()
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
 
-func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
+func (r *BookRepository) Update(ctx context.Context, book *model.Book) error {
 	query, args, err := builder.
 		Update(BookTableName).
 		Set("house_publish_id", book.HousePublishId).
@@ -289,13 +260,7 @@ func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 		return err
 	}
 
-	stmt, err := br.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	result := stmt.QueryRow(args...)
+	result := r.db.QueryRowContext(ctx, query, args...)
 	err = result.Scan(&book.UpdatedAt)
 	if err != nil {
 		return err
@@ -304,7 +269,7 @@ func (br *BookRepository) Update(ctx context.Context, book *model.Book) error {
 	return nil
 }
 
-func (br *BookRepository) Delete(ctx context.Context, id uint64) error {
+func (r *BookRepository) Delete(ctx context.Context, id uint64) error {
 	query, args, err := builder.
 		Delete(BookTableName).
 		Where(sq.Eq{"id": id}).
@@ -313,13 +278,7 @@ func (br *BookRepository) Delete(ctx context.Context, id uint64) error {
 		return err
 	}
 
-	stmt, err := br.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.Exec(args...)
+	result, err := r.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

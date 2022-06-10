@@ -25,7 +25,77 @@ func NewAuthorRepository(db *database.Database) *Author {
 	}
 }
 
-func (a *Author) GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Author, error) {
+func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.Authors, error) {
+	var authors model.Authors
+	tx := r.db.GetTxSession(ctx)
+	query, args, err := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at").
+		From(authorBooksTableName).
+		Where(sq.Eq{"ab.book_id": bookId}).
+		OrderBy("ab.book_id").
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		author := model.Author{}
+		err := rows.Scan(
+			author.Id,
+			author.FirstName,
+			author.LastName,
+			author.CreatedAt,
+			author.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		authors = append(authors, author)
+	}
+
+	return authors, nil
+}
+
+func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (model.Authors, error) {
+	var authors model.Authors
+	tx := r.db.GetTxSession(ctx)
+	query, args, err := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at").
+		From(authorBooksTableName).
+		Where(sq.Eq{"ab.book_id": bookIds}).
+		OrderBy("ab.book_id").
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		author := model.Author{}
+		err := rows.Scan(
+			author.Id,
+			author.FirstName,
+			author.LastName,
+			author.CreatedAt,
+			author.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		authors = append(authors, author)
+	}
+
+	return authors, nil
+}
+
+func (r *Author) GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Author, error) {
 	var authors []model.Author
 
 	b := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at")
@@ -76,7 +146,7 @@ func (a *Author) GetPage(ctx context.Context, paginator forms.Pagination, relati
 	return authors, nil
 }
 
-func (a *Author) GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Author, error) {
+func (r *Author) GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Author, error) {
 	author := &model.Author{}
 	scan := []interface{}{
 		&author.Id,
@@ -118,7 +188,7 @@ func (a *Author) GetById(ctx context.Context, id uint64, relations relationships
 	return author, nil
 }
 
-func (a *Author) Create(ctx context.Context, author *model.Author) error {
+func (r *Author) Create(ctx context.Context, author *model.Author) error {
 	query, args, err := builder.
 		Insert(AuthorTableName).
 		Columns(`house_publish_id, title, description, link, in_stock, created_at, updated_at`).
@@ -152,7 +222,7 @@ func (a *Author) Create(ctx context.Context, author *model.Author) error {
 	return nil
 }
 
-func (a *Author) Update(ctx context.Context, author *model.Author) error {
+func (r *Author) Update(ctx context.Context, author *model.Author) error {
 	query, args, err := builder.
 		Update(AuthorTableName).
 		Set("firstname", author.FirstName).
@@ -181,7 +251,7 @@ func (a *Author) Update(ctx context.Context, author *model.Author) error {
 	return nil
 }
 
-func (a *Author) Delete(ctx context.Context, id uint64) error {
+func (r *Author) Delete(ctx context.Context, id uint64) error {
 	query, args, err := builder.
 		Delete(AuthorTableName).
 		Where(sq.Eq{"id": id}).
