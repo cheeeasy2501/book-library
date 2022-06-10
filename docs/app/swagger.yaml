@@ -1,0 +1,543 @@
+basePath: /api/v1
+definitions:
+  app.HTTPError:
+    properties:
+      message:
+        type: string
+    type: object
+  app.SingInHandlerSuccess:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  forms.Credentials:
+    properties:
+      password:
+        example: administrator
+        type: string
+      username:
+        example: administrator
+        type: string
+    type: object
+  model.Author:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/model.Book'
+        type: array
+      created_at:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.Book:
+    properties:
+      authors:
+        items:
+          $ref: '#/definitions/model.Author'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      house_publish_id:
+        type: integer
+      house_publishes:
+        $ref: '#/definitions/model.BookHousePublishes'
+      id:
+        type: integer
+      in_stock:
+        type: integer
+      link:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - title
+    type: object
+  model.BookHousePublishes:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      id:
+        type: integer
+      lastname:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Book Library Microservice
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Book Library API
+  version: "1.0"
+paths:
+  /authors:
+    get:
+      consumes:
+      - application/json
+      description: Return author collection
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Limit number
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Author relationships:books
+        in: query
+        name: relations
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Author'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get author collection
+      tags:
+      - author
+    post:
+      consumes:
+      - application/json
+      description: Create new author and return it
+      parameters:
+      - description: Create author model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Author'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Author'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Create new author
+      tags:
+      - author
+  /authors/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete author by id
+      parameters:
+      - description: author id
+        in: path
+        name: request
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Author'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Delete author
+      tags:
+      - author
+    get:
+      consumes:
+      - application/json
+      description: Return author
+      parameters:
+      - description: Author id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Author relationships:books
+        in: query
+        name: relations
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Author'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get author by id
+      tags:
+      - author
+    patch:
+      consumes:
+      - application/json
+      description: Update author and return it
+      parameters:
+      - description: author id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update author model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Author'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Author'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Update author
+      tags:
+      - author
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Return book collection
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Limit number
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Book relationships:publish_house,author
+        in: query
+        name: relations
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Book'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get book collection
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Create new book and return it
+      parameters:
+      - description: Create book model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Book'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Create new book
+      tags:
+      - books
+  /books/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete book by id
+      parameters:
+      - description: Book id
+        in: path
+        name: request
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Delete book
+      tags:
+      - books
+    get:
+      consumes:
+      - application/json
+      description: Return book
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book relationships:authors,publish_house
+        in: query
+        name: relations
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get book by id
+      tags:
+      - books
+    patch:
+      consumes:
+      - application/json
+      description: Update book and return it
+      parameters:
+      - description: Book id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update book model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Book'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      security:
+      - ApiKeyAuth: []
+      summary: Update book
+      tags:
+      - books
+  /signIn:
+    post:
+      consumes:
+      - application/json
+      description: Return user and token
+      parameters:
+      - description: Account username and password
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/forms.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SingInHandlerSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Login to account by username and password.
+      tags:
+      - authorization
+  /signUp:
+    post:
+      consumes:
+      - application/json
+      description: Return user and token
+      parameters:
+      - description: Account username and password
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/forms.Credentials'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/app.SingInHandlerSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/app.HTTPError'
+      summary: Registration new account
+      tags:
+      - authorization
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

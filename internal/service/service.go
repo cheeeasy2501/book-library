@@ -4,15 +4,16 @@ import (
 	"context"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
+	"github.com/cheeeasy2501/book-library/internal/relationships"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 )
 
 type AuthorizationServiceInterface interface {
 	GenerateToken(usr *model.User) (string, error)
 	ParseToken(accessToken string) (int64, error)
-	HashPassword(password string) (string, error)
+	HashPassword(password string) ([]byte, error)
 	SignIn(ctx context.Context, credentials *forms.Credentials) (*model.User, string, error)
-	SignUp(ctx context.Context, user *model.User) (string, error)
+	SignUp(ctx context.Context, userForm *forms.CreateUser) (*model.User, string, error)
 }
 
 type UserServiceInterface interface {
@@ -24,23 +25,26 @@ type UserServiceInterface interface {
 }
 
 type BookServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination) ([]model.Book, error)
-	GetById(ctx context.Context, bookId uint64) (*model.Book, error)
+	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.Book, error)
+	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Book, error)
 	Create(ctx context.Context, book *model.Book) error
 	Update(ctx context.Context, book *model.Book) error
 	Delete(ctx context.Context, bookId uint64) error
 }
 
-type BookAggregateServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relations forms.Relations) ([]model.BookAggregate, error)
-	GetById(ctx context.Context, bookId uint64, relations forms.Relations) (*model.BookAggregate, error)
+type AuthorServiceInterface interface {
+	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.Author, error)
+	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Author, error)
+	Create(ctx context.Context, book *model.Author) error
+	Update(ctx context.Context, book *model.Author) error
+	Delete(ctx context.Context, bookId uint64) error
 }
 
 type Service struct {
 	Authorization AuthorizationServiceInterface
 	User          UserServiceInterface
 	Book          BookServiceInterface
-	BookAggregate BookAggregateServiceInterface
+	Author        AuthorServiceInterface
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -48,6 +52,6 @@ func NewService(repos *repository.Repository) *Service {
 		Authorization: NewAuthorizationService(repos.User, "Secret"),
 		User:          NewUserService(repos.User),
 		Book:          NewBookService(repos.Book),
-		BookAggregate: NewBookAggregateService(repos.BookAggregate),
+		Author:        NewAuthorService(repos.Author),
 	}
 }

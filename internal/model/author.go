@@ -1,17 +1,26 @@
 package model
 
+import (
+	"encoding/json"
+	"errors"
+)
+
 type Author struct {
 	Id        uint64 `json:"id"`
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Timestamp
-	Books []Book `json:"books,omitempty"`
+	Books Books `json:"books,omitempty"`
 }
 
-func (a *Author) Columns() string {
-	return "author.id, author.firstname, author.lastname, author.created_at, author.updated_at"
-}
+type Books []Book
 
-func (a *Author) Fields() []interface{} {
-	return []interface{}{&a.Id, &a.FirstName, &a.LastName, &a.CreatedAt, a.UpdatedAt}
+// impliment sql.Scanner
+func (ab *Books) Scan(src interface{}) error {
+	bts, ok := src.([]byte)
+	if !ok {
+		return errors.New("Error Scanning Array")
+	}
+
+	return json.Unmarshal(bts, ab)
 }

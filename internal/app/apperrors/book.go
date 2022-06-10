@@ -1,5 +1,5 @@
 package apperrors
 
 const (
-	BookNotFound = NotFoundError("Book isn't found")
+	BookNotFound = NotFoundError("Book isn't found!")
 )

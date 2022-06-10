@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	_ "github.com/cheeeasy2501/book-library/docs/app"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/cheeeasy2501/book-library/internal/database"
@@ -9,6 +10,8 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 )
 
@@ -24,6 +27,24 @@ type HTTPError struct {
 	Message string `json:"message"`
 }
 
+// @title           Swagger Book Library API
+// @version         1.0
+// @description     Book Library Microservice
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
+// @host      localhost:8080
+// @BasePath  /api/v1
 func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*App, error) {
 	// create and open new connection
 	connection, err := database.NewDatabaseConnection(cnf.Database)
@@ -44,15 +65,31 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 
 	routes := engine.Group("api/v1/")
 	{
+		routes.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		routes.GET("swagger", func(context *gin.Context) {
+			context.Redirect(http.StatusPermanentRedirect, "api/v1/swagger/index.html")
+		})
 		routes.POST("signIn", application.SignInHandler)
 		routes.POST("signUp", application.SignUpHandler)
-		books := routes.Group("books", application.ValidateTokenMiddleware)
+		secureRoutes := routes.Group("", application.ValidateTokenMiddleware)
 		{
-			books.GET("/", application.GetBooks)
-			books.GET("/:id", application.GetBook)
-			books.POST("/", application.CreateBook)
-			books.PATCH("/:id", application.UpdateBook)
-			books.DELETE("/:id", application.DeleteBook)
+			books := secureRoutes.Group("books")
+			{
+				books.GET("/", application.GetBooks)
+				books.GET("/:id", application.GetBook)
+				books.POST("/", application.CreateBook)
+				books.PATCH("/:id", application.UpdateBook)
+				books.DELETE("/:id", application.DeleteBook)
+			}
+			authors := secureRoutes.Group("authors")
+			{
+				authors.GET("/", application.GetAuthors)
+				authors.GET("/:id", application.GetAuthor)
+				authors.POST("/", application.CreateAuthor)
+				authors.PATCH("/:id", application.UpdateAuthor)
+				authors.DELETE("/:id", application.DeleteAuthor)
+			}
+
 		}
 	}
 

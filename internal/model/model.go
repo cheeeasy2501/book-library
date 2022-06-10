@@ -4,9 +4,12 @@ import (
 	"time"
 )
 
-type TestMapper interface {
+type ScanMapper interface {
+	ScanFields() []interface{}
+}
+
+type FieldSetter interface {
 	Columns() string
-	Fields() []interface{}
 }
 
 type Timestamp struct {
