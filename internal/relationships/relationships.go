@@ -2,11 +2,24 @@ package relationships
 
 import (
 	"bytes"
+	"github.com/gin-gonic/gin"
 	"strings"
 )
 
 type Relation string
 type Relations []Relation
+
+func (r *Relations) LoadAndValidate(ctx *gin.Context) error {
+	relationsQuery, ok := ctx.GetQuery("relations")
+	if ok {
+		err := r.UnmarshalText([]byte(relationsQuery))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // implements encoding.TextUnmarshaler
 func (r *Relations) UnmarshalText(data []byte) error {
