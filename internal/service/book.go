@@ -37,8 +37,11 @@ func (s *BookService) GetAll(ctx context.Context, paginator forms.Pagination, re
 		return nil, err
 	}
 
-	for i := 0; i < len(books); i++ {
-
+	mapBooks := make(map[uint64]*model.Book, len(books))
+	ids := make([]uint64, len(books))
+	for _, book := range books {
+		ids = append(ids, book.Id)
+		mapBooks[book.Id] = &book
 	}
 
 	authors, err = s.authorRepository.GetAuthorsByBooksIds(ctx, bookIds)
@@ -46,9 +49,9 @@ func (s *BookService) GetAll(ctx context.Context, paginator forms.Pagination, re
 		return nil, err
 	}
 
-	//for  {
-	//
-	//}
+	for _, author := range authors {
+
+	}
 
 	return books, nil
 }

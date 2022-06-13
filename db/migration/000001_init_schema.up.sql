@@ -10,7 +10,7 @@ CREATE TABLE users
     Updated_At timestamp with time zone
 );
 
-CREATE TABLE author
+CREATE TABLE authors
 (
     Id         serial primary key,
     FirstName  varchar(30),
@@ -34,7 +34,7 @@ CREATE TABLE books
 CREATE TABLE author_books
 (
     Id        serial primary key,
-    Author_Id integer references author (Id) on delete set null,
+    Author_Id integer references authors (Id) on delete set null,
     Book_Id   integer references books (Id) on delete cascade
 );
 

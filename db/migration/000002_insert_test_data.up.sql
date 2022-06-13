@@ -44,25 +44,25 @@ VALUES (7, 2, 'Test Book Title 7',
         'http://test-7.com', 10, now(), now());
 
 --INSERT AUTHORS
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (1, 'Inessa', 'Rhouben', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (2, 'Gisilbert', 'Brigid', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (3, 'Soroush', 'Wulfgifu', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (4, 'Anastasija', 'Fiachna', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (5, 'Gilbert', 'Martin', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (6, 'Viltautė', 'Lady', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (7, 'Connla', 'Jyoti', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (8, 'Hervey', 'Angel', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (9, 'Kenina', 'Ace', now(), now());
-INSERT INTO author (id, firstname, lastname, created_at, updated_at)
+INSERT INTO authors (id, firstname, lastname, created_at, updated_at)
 VALUES (10, 'Jehan', 'Jannine', now(), now());
 
 

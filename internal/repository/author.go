@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	AuthorTableName = "author"
+	AuthorTableName = "authors"
 )
 
 type Author struct {
@@ -28,10 +28,11 @@ func NewAuthorRepository(db *database.Database) *Author {
 func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.Authors, error) {
 	var authors model.Authors
 	tx := r.db.GetTxSession(ctx)
-	query, args, err := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at").
+	query, args, err := builder.Select("author_books.book_id, authors.id as author_id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at").
 		From(authorBooksTableName).
-		Where(sq.Eq{"ab.book_id": bookId}).
-		OrderBy("ab.book_id").
+		LeftJoin(AuthorTableName).
+		Where(sq.Eq{"author_books.book_id": bookId}).
+		OrderBy("author_books.book_id").
 		ToSql()
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.A
 func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (model.Authors, error) {
 	var authors model.Authors
 	tx := r.db.GetTxSession(ctx)
-	query, args, err := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at").
+	query, args, err := builder.Select("authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at").
 		From(authorBooksTableName).
 		Where(sq.Eq{"ab.book_id": bookIds}).
 		OrderBy("ab.book_id").
@@ -79,7 +80,7 @@ func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (mo
 
 	for rows.Next() {
 		author := model.Author{}
-		err := rows.Scan(
+		err = rows.Scan(
 			author.Id,
 			author.FirstName,
 			author.LastName,
@@ -97,8 +98,7 @@ func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (mo
 
 func (r *Author) GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Author, error) {
 	var authors []model.Author
-
-	b := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at")
+	b := builder.Select("authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at")
 	b.From(AuthorTableName).
 		Offset(paginator.GetOffset()).
 		Limit(paginator.Limit)
@@ -106,22 +106,15 @@ func (r *Author) GetPage(ctx context.Context, paginator forms.Pagination, relati
 	if slices.Contains(relations, relationships.BookRelation) {
 		b = b.Columns("json_agg(books.*) as books").
 			LeftJoin("author_books on books.id = author_books.book_id").
-			LeftJoin("author on author.id = author_books.author_id").
-			GroupBy("author.id")
+			LeftJoin("authors on authors.id = author_books.author_id").
+			GroupBy("authors.id")
 	}
 	query, args, err := b.ToSql()
-
 	if err != nil {
 		return nil, err
 	}
 
-	stmt, err := a.db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.Query(args...)
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -155,9 +148,9 @@ func (r *Author) GetById(ctx context.Context, id uint64, relations relationships
 		&author.CreatedAt,
 		&author.UpdatedAt,
 	}
-	b := builder.Select("author.id, author.firstname, author.lastname, author.created_at, author.updated_at")
+	b := builder.Select("authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at")
 	b.From(AuthorTableName).
-		Where(sq.Eq{"author.id": id})
+		Where(sq.Eq{"authors.id": id})
 
 	if slices.Contains(relations, relationships.BookRelation) {
 		scan = append(scan, []interface{}{
@@ -165,22 +158,15 @@ func (r *Author) GetById(ctx context.Context, id uint64, relations relationships
 		})
 		b = b.Columns("json_agg(books.*) as books").
 			LeftJoin("author_books on books.id = author_books.book_id").
-			LeftJoin("author on author.id = author_books.author_id").
-			GroupBy("author.id")
+			LeftJoin("authors on authors.id = author_books.author_id").
+			GroupBy("authors.id")
 	}
 	query, args, err := b.ToSql()
-
 	if err != nil {
 		return nil, err
 	}
 
-	stmt, err := a.db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	err = stmt.QueryRow(args...).Scan(scan...)
+	err = r.db.QueryRowContext(ctx, query, args...).Scan(scan...)
 	if err != nil {
 		return nil, err
 	}
@@ -202,13 +188,7 @@ func (r *Author) Create(ctx context.Context, author *model.Author) error {
 		return err
 	}
 
-	stmt, err := a.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	result := stmt.QueryRow(args...)
+	result := r.db.QueryRowContext(ctx, query, args...)
 	err = result.Scan(
 		&author.Id,
 		&author.CreatedAt,
@@ -235,14 +215,7 @@ func (r *Author) Update(ctx context.Context, author *model.Author) error {
 	if err != nil {
 		return err
 	}
-
-	stmt, err := a.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	result := stmt.QueryRow(args...)
+	result := r.db.QueryRowContext(ctx, query, args...)
 	err = result.Scan(&author.UpdatedAt)
 	if err != nil {
 		return err
@@ -260,13 +233,7 @@ func (r *Author) Delete(ctx context.Context, id uint64) error {
 		return err
 	}
 
-	stmt, err := a.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.Exec(args...)
+	result, err := r.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
