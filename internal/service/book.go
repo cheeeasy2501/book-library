@@ -50,7 +50,8 @@ func (s *BookService) GetAll(ctx context.Context, paginator forms.Pagination, re
 	}
 
 	for _, author := range authors {
-
+		book := mapBooks[author.Id]
+		book.Authors = append(book.Authors, author)
 	}
 
 	return books, nil

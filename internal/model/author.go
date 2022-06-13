@@ -24,3 +24,11 @@ func (ab *Books) Scan(src interface{}) error {
 
 	return json.Unmarshal(bts, ab)
 }
+
+type AuthorAggregate struct {
+	Id        uint64 `json:"id"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
+	Timestamp
+	BookId uint64 `json:"bookId"`
+}
