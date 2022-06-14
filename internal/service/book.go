@@ -18,7 +18,7 @@ type BookServiceInterface interface {
 
 	GetAllWithRelations(ctx context.Context, paginator forms.Pagination) ([]model.FullBook, error)
 	GetByIdWithRelations(ctx context.Context, bookId uint64) (model.FullBook, error)
-	CreateWithRelations(ctx context.Context, fullBook *model.FullBook) error
+	CreateWithRelations(ctx context.Context, createBook model.CreateBook) (*model.FullBook, error)
 }
 
 type BookService struct {
@@ -91,7 +91,7 @@ func (s *BookService) GetAllWithRelations(ctx context.Context, paginator forms.P
 		err       error
 		books     []model.Book
 		fullBooks []model.FullBook
-		authors   []model.AuthorRelation
+		authors   model.Authors
 	)
 
 	books, err = s.bookRepository.GetPage(ctx, paginator.Offset, paginator.Limit)
@@ -136,34 +136,39 @@ func (s *BookService) GetByIdWithRelations(ctx context.Context, bookId uint64) (
 	return fullBook, nil
 }
 
-func (s *BookService) CreateWithRelations(ctx context.Context, fullBook *model.FullBook) error {
-	currentTime := time.Now()
-	fullBook.Book.CreatedAt = currentTime
-	fullBook.Book.UpdatedAt = currentTime
+func (s *BookService) CreateWithRelations(ctx context.Context, m model.CreateBook) (*model.FullBook, error) {
+	var (
+		err      error
+		fullBook model.FullBook
+	)
 
 	ctx, finish, err := s.db.TxSession(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer finish(err)
+	defer func() {
+		finish(err)
+	}()
 
-	err = s.bookRepository.Create(ctx, &fullBook.Book)
+	err = s.bookRepository.Create(ctx, &m.Book)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
-}
+	err = s.authorRepository.AttachByAuthorIds(ctx, m.Id, m.AuthorIds)
+	if err != nil {
+		return nil, err
+	}
+	authors, err := s.authorRepository.GetAuthorsByBookId(ctx, m.Id)
+	if err != nil {
+		return &fullBook, err
+	}
 
-//
-//func (s *BookService) CreateWithAuthors(ctx context.Context, book *model.Book) {
-//	currentTime := time.Now()
-//	book.CreatedAt = currentTime
-//	book.UpdatedAt = currentTime
-//	ctx, finish, err := s.db.TxSession(ctx)
-//	if err != nil {
-//		return
-//	}
-//
-//	finish(err)
-//}
+	currentTime := time.Now()
+	fullBook.Book = m.Book
+	fullBook.Book.CreatedAt = currentTime
+	fullBook.Book.UpdatedAt = currentTime
+	fullBook.Authors = authors
+
+	return &fullBook, nil
+}

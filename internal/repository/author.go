@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/database"
@@ -14,6 +15,18 @@ import (
 const (
 	AuthorTableName = "authors"
 )
+
+type AuthorRepoInterface interface {
+	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.FullAuthor, error)
+	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.FullAuthor, error)
+	Create(ctx context.Context, book *model.FullAuthor) error
+	Update(ctx context.Context, book *model.FullAuthor) error
+	Delete(ctx context.Context, id uint64) error
+
+	GetAuthorsByBookId(ctx context.Context, id uint64) (model.Authors, error)
+	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) (model.Authors, error)
+	AttachByAuthorIds(ctx context.Context, bookId uint64, authorIds []uint64) error
+}
 
 type Author struct {
 	db *database.Database
@@ -28,9 +41,10 @@ func NewAuthorRepository(db *database.Database) *Author {
 func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.Authors, error) {
 	var authors model.Authors
 	tx := r.db.GetTxSession(ctx)
-	query, args, err := builder.Select("author_books.book_id, authors.id as author_id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at").
+	query, args, err := builder.Select(
+		"authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at").
 		From(authorBooksTableName).
-		LeftJoin(AuthorTableName).
+		LeftJoin("authors on authors.id = author_books.author_id").
 		Where(sq.Eq{"author_books.book_id": bookId}).
 		OrderBy("author_books.book_id").
 		ToSql()
@@ -38,19 +52,19 @@ func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.A
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, query, args)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 
 	for rows.Next() {
-		author := model.FullAuthor{}
+		author := model.Author{}
 		err := rows.Scan(
-			author.Id,
-			author.FirstName,
-			author.LastName,
-			author.CreatedAt,
-			author.UpdatedAt,
+			&author.Id,
+			&author.FirstName,
+			&author.LastName,
+			&author.CreatedAt,
+			&author.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -61,11 +75,11 @@ func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.A
 	return authors, nil
 }
 
-func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) ([]model.AuthorRelation, error) {
-	var authors []model.AuthorRelation
+func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (model.Authors, error) {
+	var authors model.Authors
 
 	query, args, err := builder.Select(
-		`authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at, author_books.book_id`).
+		`authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at`).
 		From(authorBooksTableName).
 		LeftJoin("authors on authors.id = author_books.author_id").
 		Where(sq.Eq{"author_books.book_id": bookIds}).
@@ -81,14 +95,13 @@ func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) ([]
 	}
 
 	for rows.Next() {
-		author := model.AuthorRelation{}
+		author := model.Author{}
 		err = rows.Scan(
-			author.Id,
-			author.FirstName,
-			author.LastName,
-			author.CreatedAt,
-			author.UpdatedAt,
-			author.BookId,
+			&author.Id,
+			&author.FirstName,
+			&author.LastName,
+			&author.CreatedAt,
+			&author.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -248,6 +261,33 @@ func (r *Author) Delete(ctx context.Context, id uint64) error {
 
 	if count == 0 {
 		return apperrors.AuthorNotFound
+	}
+
+	return nil
+}
+
+func (a *Author) AttachByAuthorIds(ctx context.Context, bookId uint64, authorIds []uint64) error {
+	var count int64 = 0
+	session := a.db.GetTxSession(ctx)
+	for _, authorId := range authorIds {
+		query, args, err := builder.Insert(authorBooksTableName).
+			Columns("author_id", "book_id").
+			Values(authorId, bookId).
+			ToSql()
+		result, err := session.ExecContext(ctx, query, args...)
+		if err != nil {
+			return err
+		}
+		affected, err := result.RowsAffected()
+
+		if err != nil {
+			return err
+		}
+		count += affected
+	}
+
+	if int(count) != len(authorIds) {
+		return errors.New("Invalid updated")
 	}
 
 	return nil

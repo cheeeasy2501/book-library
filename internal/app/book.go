@@ -85,39 +85,23 @@ func (a *App) CreateBook(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-	_, ok := ctx.GetQuery("relations")
 
-	switch ok {
-	case true:
-		book := &model.FullBook{
-			Book: model.Book{
-				HousePublishId: form.HousePublishId,
-				Title:          form.Title,
-				Description:    form.Description,
-				Link:           form.Link,
-				InStock:        form.InStock,
-			},
-		}
-		err := a.service.Book.CreateWithRelations(ctx, book)
-		if err != nil {
-			return
-		}
-		a.SendResponse(ctx, book)
-
-	default:
-		book := &model.Book{
+	book := model.CreateBook{
+		Book: model.Book{
 			HousePublishId: form.HousePublishId,
 			Title:          form.Title,
 			Description:    form.Description,
 			Link:           form.Link,
 			InStock:        form.InStock,
-		}
-		err := a.service.Book.Create(ctx, book)
-		if err != nil {
-			return
-		}
-		a.SendResponse(ctx, book)
+		},
+		AuthorIds: form.AuthorIds,
 	}
+	fullBook, err := a.service.Book.CreateWithRelations(ctx, book)
+	if err != nil {
+		return
+	}
+	a.SendResponse(ctx, fullBook)
+
 }
 
 func (a *App) UpdateBook(ctx *gin.Context) {

@@ -39,11 +39,12 @@ func NewGetBookForm() *GetBookForm {
 }
 
 type CreateBookForm struct {
-	HousePublishId uint64 `json:"house_publish_id" binding:"qte=0"`
-	Title          string `json:"title" binding:"required"`
-	Description    string `json:"description"`
-	Link           string `json:"link" binding:"url"`
-	InStock        uint   `json:"in_stock" binding:"gte=0"`
+	HousePublishId uint64   `json:"house_publish_id" binding:"gte=0"`
+	Title          string   `json:"title" binding:"required"`
+	Description    string   `json:"description"`
+	Link           string   `json:"link" binding:"url"`
+	InStock        uint     `json:"in_stock" binding:"gte=0"`
+	AuthorIds      []uint64 `json:"author_ids"`
 }
 
 func NewCreateBookForm() *CreateBookForm {
@@ -52,7 +53,7 @@ func NewCreateBookForm() *CreateBookForm {
 
 type UpdateBookForm struct {
 	Id             uint64 `uri:"id"`
-	HousePublishId int64  `json:"house_publish_id" binding:"qte=0"`
+	HousePublishId int64  `json:"house_publish_id" binding:"gte=0"`
 	Title          string `json:"title" binding:"required"`
 	Description    string `json:"description"`
 	Link           string `json:"link" binding:"url"`

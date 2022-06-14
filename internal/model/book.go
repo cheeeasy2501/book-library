@@ -18,11 +18,16 @@ type Book struct {
 
 type FullBook struct {
 	Book
-	Authors            []AuthorRelation    `json:"authors,omitempty"`
+	Authors            Authors             `json:"authors,omitempty"`
 	BookHousePublishes *BookHousePublishes `json:"house_publishes,omitempty"`
 }
 
-type Authors []FullAuthor
+type CreateBook struct {
+	Book
+	AuthorIds []uint64
+}
+
+type Authors []Author
 
 // impliment sql.Scanner
 func (a *Authors) Scan(src interface{}) error {
@@ -39,7 +44,7 @@ func (a *Authors) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	//todo check it
-	var authors []FullAuthor
+	var authors Authors
 	err := json.Unmarshal(data, &authors)
 	if err != nil {
 		return err

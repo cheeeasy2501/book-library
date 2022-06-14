@@ -6,7 +6,6 @@ import (
 	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
-	"github.com/cheeeasy2501/book-library/internal/relationships"
 )
 
 var builder = sq.StatementBuilderType{}.PlaceholderFormat(sq.Dollar)
@@ -18,17 +17,6 @@ type UserRepoInterface interface {
 	Update(ctx context.Context, usr *model.User) error
 	Delete(ctx context.Context, id uint64) error
 	FindByUserName(cxt context.Context, username string) (*model.User, error)
-}
-
-type AuthorRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.FullAuthor, error)
-	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.FullAuthor, error)
-	Create(ctx context.Context, book *model.FullAuthor) error
-	Update(ctx context.Context, book *model.FullAuthor) error
-	Delete(ctx context.Context, id uint64) error
-
-	GetAuthorsByBookId(ctx context.Context, id uint64) (model.Authors, error)
-	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) ([]model.AuthorRelation, error)
 }
 
 type AuthorBooksRepoInterface interface {
