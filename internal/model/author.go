@@ -10,10 +10,19 @@ type Author struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Timestamp
+}
+
+type AuthorRelation struct {
+	Author
+	BookId uint64
+}
+
+type FullAuthor struct {
+	Author
 	Books Books `json:"books,omitempty"`
 }
 
-type Books []Book
+type Books []FullBook
 
 // impliment sql.Scanner
 func (ab *Books) Scan(src interface{}) error {

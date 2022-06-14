@@ -57,7 +57,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Author relationships:books",
+                        "description": "FullAuthor relationships:books",
                         "name": "relations",
                         "in": "query"
                     }
@@ -68,7 +68,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Author"
+                                "$ref": "#/definitions/model.FullAuthor"
                             }
                         }
                     },
@@ -113,7 +113,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Author"
+                            "$ref": "#/definitions/model.FullAuthor"
                         }
                     }
                 ],
@@ -121,7 +121,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Author"
+                            "$ref": "#/definitions/model.FullAuthor"
                         }
                     },
                     "400": {
@@ -163,14 +163,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Author id",
+                        "description": "FullAuthor id",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Author relationships:books",
+                        "description": "FullAuthor relationships:books",
                         "name": "relations",
                         "in": "query"
                     }
@@ -179,7 +179,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Author"
+                            "$ref": "#/definitions/model.FullAuthor"
                         }
                     },
                     "400": {
@@ -224,7 +224,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Author"
+                            "$ref": "#/definitions/model.FullAuthor"
                         }
                     },
                     "400": {
@@ -275,7 +275,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Author"
+                            "$ref": "#/definitions/model.FullAuthor"
                         }
                     }
                 ],
@@ -283,7 +283,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Author"
+                            "$ref": "#/definitions/model.FullAuthor"
                         }
                     },
                     "400": {
@@ -721,7 +721,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Author": {
+        "model.FullAuthor": {
             "type": "object",
             "properties": {
                 "books": {
@@ -756,7 +756,7 @@ const docTemplate = `{
                 "authors": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Author"
+                        "$ref": "#/definitions/model.FullAuthor"
                     }
                 },
                 "created_at": {

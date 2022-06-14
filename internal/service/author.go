@@ -18,21 +18,21 @@ func NewAuthorService(repo repository.AuthorRepoInterface) *AuthorService {
 	}
 }
 
-func (s *AuthorService) GetAll(ctx context.Context, pagination forms.Pagination, relations relationships.Relations) ([]model.Author, error) {
+func (s *AuthorService) GetAll(ctx context.Context, pagination forms.Pagination, relations relationships.Relations) ([]model.FullAuthor, error) {
 	authors, err := s.repo.GetPage(ctx, pagination, relations)
 	if err != nil {
 		return nil, err
 	}
 	return authors, nil
 }
-func (s *AuthorService) GetById(ctx context.Context, authorId uint64, relations relationships.Relations) (*model.Author, error) {
+func (s *AuthorService) GetById(ctx context.Context, authorId uint64, relations relationships.Relations) (*model.FullAuthor, error) {
 	author, err := s.repo.GetById(ctx, authorId, relations)
 	if err != nil {
 		return nil, err
 	}
 	return author, nil
 }
-func (s *AuthorService) Create(ctx context.Context, author *model.Author) error {
+func (s *AuthorService) Create(ctx context.Context, author *model.FullAuthor) error {
 	err := s.repo.Create(ctx, author)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (s *AuthorService) Create(ctx context.Context, author *model.Author) error 
 
 	return nil
 }
-func (s *AuthorService) Update(ctx context.Context, author *model.Author) error {
+func (s *AuthorService) Update(ctx context.Context, author *model.FullAuthor) error {
 	err := s.Update(ctx, author)
 	if err != nil {
 		return err

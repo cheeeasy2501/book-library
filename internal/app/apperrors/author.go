@@ -1,5 +1,5 @@
 package apperrors
 
 const (
-	AuthorNotFound = NotFoundError("Author isn't found!")
+	AuthorNotFound = NotFoundError("FullAuthor isn't found!")
 )

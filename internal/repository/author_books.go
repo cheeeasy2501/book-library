@@ -30,11 +30,7 @@ func (ab *AuthorBooks) Attach(ctx context.Context, authorId, bookId uint64) erro
 		Columns("author_id", "book_id").
 		Values(authorId, bookId).
 		ToSql()
-	prepareContext, err := ab.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	result, err := prepareContext.Exec(args...)
+	result, err := ab.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -59,11 +55,7 @@ func (ab *AuthorBooks) Detach(ctx context.Context, authorId, bookId uint64) erro
 		}).
 		ToSql()
 
-	prepareContext, err := ab.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	result, err := prepareContext.Exec(args...)
+	result, err := ab.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

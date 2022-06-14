@@ -18,8 +18,8 @@ import (
 // @Consume 	 json
 // @Param        page    query  int  true  "Page number"
 // @Param        limit    query  int  true  "Limit number"
-// @Param        relations    query  string  false  "Author relationships:books"
-// @Success      200  {array}   model.Author
+// @Param        relations    query  string  false  "FullAuthor relationships:books"
+// @Success      200  {array}   model.FullAuthor
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
@@ -50,7 +50,7 @@ func (a *App) GetAuthors(ctx *gin.Context) {
 		}
 	}
 
-	var authors []model.Author
+	var authors []model.FullAuthor
 	authors, err = a.service.Author.GetAll(ctx, pagination, relations)
 	if err != nil {
 		return
@@ -64,9 +64,9 @@ func (a *App) GetAuthors(ctx *gin.Context) {
 // @Tags         author
 // @Accept       json
 // @Consume 	 json
-// @Param        id    path  int  true  "Author id"
-// @Param        relations    query  string  false  "Author relationships:books"
-// @Success      200  {object}  model.Author
+// @Param        id    path  int  true  "FullAuthor id"
+// @Param        relations    query  string  false  "FullAuthor relationships:books"
+// @Success      200  {object}  model.FullAuthor
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
@@ -93,7 +93,7 @@ func (a *App) GetAuthor(ctx *gin.Context) {
 		}
 	}
 
-	var author *model.Author
+	var author *model.FullAuthor
 	author, err = a.service.Author.GetById(ctx, form.Id, relations)
 	if err != nil {
 		return
@@ -107,8 +107,8 @@ func (a *App) GetAuthor(ctx *gin.Context) {
 // @Tags         author
 // @Accept       json
 // @Consume 	 json
-// @Param   	 request  body  model.Author     true  "Create author model"
-// @Success      200  {object}  model.Author
+// @Param   	 request  body  model.FullAuthor     true  "Create author model"
+// @Success      200  {object}  model.FullAuthor
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
@@ -117,7 +117,7 @@ func (a *App) GetAuthor(ctx *gin.Context) {
 func (a *App) CreateAuthor(ctx *gin.Context) {
 	var (
 		err    error
-		author *model.Author
+		author *model.FullAuthor
 	)
 
 	defer func() {
@@ -144,8 +144,8 @@ func (a *App) CreateAuthor(ctx *gin.Context) {
 // @Accept       json
 // @Consume 	 json
 // @Param   	 id  path  int     true  "author id"
-// @Param   	 request  body  model.Author     true  "Update author model"
-// @Success      200  {object}  model.Author
+// @Param   	 request  body  model.FullAuthor     true  "Update author model"
+// @Success      200  {object}  model.FullAuthor
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError
@@ -154,7 +154,7 @@ func (a *App) CreateAuthor(ctx *gin.Context) {
 func (a *App) UpdateAuthor(ctx *gin.Context) {
 	var (
 		err    error
-		author *model.Author
+		author *model.FullAuthor
 		id     uint64
 	)
 
@@ -188,7 +188,7 @@ func (a *App) UpdateAuthor(ctx *gin.Context) {
 // @Accept       json
 // @Consume 	 json
 // @Param   	 request  path    int     true  "author id"
-// @Success      200  {object}  model.Author
+// @Success      200  {object}  model.FullAuthor
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError

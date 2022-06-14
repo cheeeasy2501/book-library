@@ -7,25 +7,9 @@ import (
 	"time"
 )
 
-// GetBooks godoc
-// @Summary      Get book collection
-// @Description  Return book collection
-// @Tags         books
-// @Accept       json
-// @Consume 	 json
-// @Param        page    query  int  true  "Page number"
-// @Param        limit    query  int  true  "Limit number"
-// @Param        relations    query  string  false  "Book relationships:publish_house,author"
-// @Success      200  {array}   model.Book
-// @Failure      400  {object}  HTTPError
-// @Failure      404  {object}  HTTPError
-// @Failure      500  {object}  HTTPError
-// @Security     ApiKeyAuth
-// @Router       /books [get]
 func (a *App) GetBooks(ctx *gin.Context) {
 	var (
-		err   error
-		books []model.Book
+		err error
 	)
 
 	defer func() {
@@ -37,33 +21,27 @@ func (a *App) GetBooks(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
+	_, ok := ctx.GetQuery("relations")
 
-	books, err = a.service.Book.GetAll(ctx, form.Pagination, form.Relations)
-	if err != nil {
-		return
+	switch ok {
+	case true:
+		book, err := a.service.Book.GetAllWithRelations(ctx, form.Pagination)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, book)
+	default:
+		books, err := a.service.Book.GetAll(ctx, form.Pagination)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, books)
 	}
-	a.SendResponse(ctx, books)
-
 }
 
-// GetBook godoc
-// @Summary      Get book by id
-// @Description  Return book
-// @Tags         books
-// @Accept       json
-// @Consume 	 json
-// @Param        id    path  int  true  "Book ID"
-// @Param        relations    query  string  false  "Book relationships:authors,publish_house"
-// @Success      200  {object}  model.Book
-// @Failure      400  {object}  HTTPError
-// @Failure      404  {object}  HTTPError
-// @Failure      500  {object}  HTTPError
-// @Security     ApiKeyAuth
-// @Router       /books/{id} [get]
 func (a *App) GetBook(ctx *gin.Context) {
 	var (
-		err  error
-		book *model.Book
+		err error
 	)
 
 	defer func() {
@@ -75,35 +53,24 @@ func (a *App) GetBook(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
+	_, ok := ctx.GetQuery("relations")
 
-	relationsQuery, ok := ctx.GetQuery("relations")
-	if ok {
-		err = form.Relations.UnmarshalText([]byte(relationsQuery))
+	switch ok {
+	case true:
+		book, err := a.service.Book.GetByIdWithRelations(ctx, form.Id)
 		if err != nil {
 			return
 		}
+		a.SendResponse(ctx, book)
+	default:
+		book, err := a.service.Book.GetById(ctx, form.Id)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, book)
 	}
-
-	book, err = a.service.Book.GetById(ctx, form.Id, form.Relations)
-	if err != nil {
-		return
-	}
-	a.SendResponse(ctx, book)
 }
 
-// CreateBook godoc
-// @Summary      Create new book
-// @Description  Create new book and return it
-// @Tags         books
-// @Accept       json
-// @Consume 	 json
-// @Param   	 request  body  model.Book     true  "Create book model"
-// @Success      200  {object}  model.Book
-// @Failure      400  {object}  HTTPError
-// @Failure      404  {object}  HTTPError
-// @Failure      500  {object}  HTTPError
-// @Security     ApiKeyAuth
-// @Router       /books [post]
 func (a *App) CreateBook(ctx *gin.Context) {
 	var (
 		err error
@@ -112,41 +79,47 @@ func (a *App) CreateBook(ctx *gin.Context) {
 	defer func() {
 		a.SendError(ctx, err)
 	}()
+
 	form := forms.NewCreateBookForm()
 	err = ctx.BindJSON(&form)
 	if err != nil {
 		return
 	}
+	_, ok := ctx.GetQuery("relations")
 
-	book := &model.Book{
-		HousePublishId: form.HousePublishId,
-		Title:          form.Title,
-		Description:    form.Description,
-		Link:           form.Link,
-		InStock:        form.InStock,
-	}
-	err = a.service.Book.Create(ctx, book)
-	if err != nil {
-		return
-	}
+	switch ok {
+	case true:
+		book := &model.FullBook{
+			Book: model.Book{
+				HousePublishId: form.HousePublishId,
+				Title:          form.Title,
+				Description:    form.Description,
+				Link:           form.Link,
+				InStock:        form.InStock,
+			},
+		}
+		err := a.service.Book.CreateWithRelations(ctx, book)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, book)
 
-	a.SendResponse(ctx, book)
+	default:
+		book := &model.Book{
+			HousePublishId: form.HousePublishId,
+			Title:          form.Title,
+			Description:    form.Description,
+			Link:           form.Link,
+			InStock:        form.InStock,
+		}
+		err := a.service.Book.Create(ctx, book)
+		if err != nil {
+			return
+		}
+		a.SendResponse(ctx, book)
+	}
 }
 
-// UpdateBook godoc
-// @Summary      Update book
-// @Description  Update book and return it
-// @Tags         books
-// @Accept       json
-// @Consume 	 json
-// @Param   	 id  path  int     true  "Book id"
-// @Param   	 request  body  model.Book     true  "Update book model"
-// @Success      200  {object}  model.Book
-// @Failure      400  {object}  HTTPError
-// @Failure      404  {object}  HTTPError
-// @Failure      500  {object}  HTTPError
-// @Security     ApiKeyAuth
-// @Router       /books/{id} [patch]
 func (a *App) UpdateBook(ctx *gin.Context) {
 	var (
 		err  error
@@ -181,8 +154,8 @@ func (a *App) UpdateBook(ctx *gin.Context) {
 // @Tags         books
 // @Accept       json
 // @Consume 	 json
-// @Param   	 request  path    int     true  "Book id"
-// @Success      200  {object}  model.Book
+// @Param   	 request  path    int     true  "FullBook id"
+// @Success      200  {object}  model.FullBook
 // @Failure      400  {object}  HTTPError
 // @Failure      404  {object}  HTTPError
 // @Failure      500  {object}  HTTPError

@@ -20,23 +20,15 @@ type UserRepoInterface interface {
 	FindByUserName(cxt context.Context, username string) (*model.User, error)
 }
 
-type BookRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Book, error)
-	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Book, error)
-	Create(ctx context.Context, book *model.Book) error
-	Update(ctx context.Context, book *model.Book) error
-	Delete(ctx context.Context, id uint64) error
-}
-
 type AuthorRepoInterface interface {
-	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.Author, error)
-	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.Author, error)
-	Create(ctx context.Context, book *model.Author) error
-	Update(ctx context.Context, book *model.Author) error
+	GetPage(ctx context.Context, paginator forms.Pagination, relations relationships.Relations) ([]model.FullAuthor, error)
+	GetById(ctx context.Context, id uint64, relations relationships.Relations) (*model.FullAuthor, error)
+	Create(ctx context.Context, book *model.FullAuthor) error
+	Update(ctx context.Context, book *model.FullAuthor) error
 	Delete(ctx context.Context, id uint64) error
 
 	GetAuthorsByBookId(ctx context.Context, id uint64) (model.Authors, error)
-	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) (model.Authors, error)
+	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) ([]model.AuthorRelation, error)
 }
 
 type AuthorBooksRepoInterface interface {

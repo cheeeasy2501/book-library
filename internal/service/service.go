@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/relationships"
@@ -24,19 +25,11 @@ type UserServiceInterface interface {
 	Delete(ctx context.Context, userId uint64) error
 }
 
-type BookServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.Book, error)
-	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Book, error)
-	Create(ctx context.Context, book *model.Book) error
-	Update(ctx context.Context, book *model.Book) error
-	Delete(ctx context.Context, bookId uint64) error
-}
-
 type AuthorServiceInterface interface {
-	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.Author, error)
-	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.Author, error)
-	Create(ctx context.Context, book *model.Author) error
-	Update(ctx context.Context, book *model.Author) error
+	GetAll(ctx context.Context, params forms.Pagination, relations relationships.Relations) ([]model.FullAuthor, error)
+	GetById(ctx context.Context, bookId uint64, relations relationships.Relations) (*model.FullAuthor, error)
+	Create(ctx context.Context, book *model.FullAuthor) error
+	Update(ctx context.Context, book *model.FullAuthor) error
 	Delete(ctx context.Context, bookId uint64) error
 }
 
@@ -47,11 +40,11 @@ type Service struct {
 	Author        AuthorServiceInterface
 }
 
-func NewService(repos *repository.Repository) *Service {
+func NewService(db *database.Database, repos *repository.Repository) *Service {
 	return &Service{
 		Authorization: NewAuthorizationService(repos.User, "Secret"),
 		User:          NewUserService(repos.User),
-		Book:          NewBookService(repos.Book),
+		Book:          NewBookService(db, repos.Book, repos.Author),
 		Author:        NewAuthorService(repos.Author),
 	}
 }

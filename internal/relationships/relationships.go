@@ -77,7 +77,7 @@ func (r Relations) MarshalJSON() ([]byte, error) {
 }
 
 const (
-	AuthorRel       = Relation("authors")
-	PublishHouseRel = Relation("publish_house")
-	BookRelation    = Relation("books")
+	AuthorRelation       = Relation("authors")
+	PublishHouseRelation = Relation("publish_house")
+	BookRelation         = Relation("books")
 )

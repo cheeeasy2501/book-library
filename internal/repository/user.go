@@ -41,10 +41,6 @@ func (r *UserRepository) GetPage(ctx context.Context, paginator forms.Pagination
 	if err != nil {
 		return nil, err
 	}
-	ctx, saveFunc, err := r.db.TxSession(ctx)
-	if err != nil {
-		return nil, err
-	}
 	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -82,7 +78,7 @@ func (r *UserRepository) GetPage(ctx context.Context, paginator forms.Pagination
 
 }
 
-func (ur *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, error) {
+func (r *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, error) {
 	var (
 		err      error
 		user     *model.User
@@ -96,7 +92,7 @@ func (ur *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, 
 		return nil, err
 	}
 
-	stmt, err := ur.db.PrepareContext(ctx, query)
+	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +119,7 @@ func (ur *UserRepository) GetById(ctx context.Context, id uint64) (*model.User, 
 	return user, nil
 }
 
-func (ur *UserRepository) Create(ctx context.Context, user *model.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 	var id int64
 	currentDateTime := time.Now()
 	query, args, err := builder.
@@ -144,7 +140,7 @@ func (ur *UserRepository) Create(ctx context.Context, user *model.User) error {
 		return err
 	}
 
-	stmt, err := ur.db.PrepareContext(ctx, query)
+	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -161,7 +157,7 @@ func (ur *UserRepository) Create(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (ur *UserRepository) Update(ctx context.Context, usr *model.User) error {
+func (r *UserRepository) Update(ctx context.Context, usr *model.User) error {
 	query, args, err := builder.
 		Update(usersTableName).
 		Set("firstname", usr.FirstName).
@@ -176,7 +172,7 @@ func (ur *UserRepository) Update(ctx context.Context, usr *model.User) error {
 		return err
 	}
 
-	stmt, err := ur.db.PrepareContext(ctx, query)
+	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -191,7 +187,7 @@ func (ur *UserRepository) Update(ctx context.Context, usr *model.User) error {
 	return nil
 }
 
-func (ur *UserRepository) Delete(ctx context.Context, id uint64) error {
+func (r *UserRepository) Delete(ctx context.Context, id uint64) error {
 	query, args, err := builder.
 		Delete(usersTableName).
 		Where(sq.Eq{"id": id}).
@@ -200,7 +196,7 @@ func (ur *UserRepository) Delete(ctx context.Context, id uint64) error {
 		return err
 	}
 
-	stmt, err := ur.db.PrepareContext(ctx, query)
+	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -223,7 +219,7 @@ func (ur *UserRepository) Delete(ctx context.Context, id uint64) error {
 }
 
 // FindByUserName FindByUsername
-func (ur *UserRepository) FindByUserName(ctx context.Context, username string) (*model.User, error) {
+func (r *UserRepository) FindByUserName(ctx context.Context, username string) (*model.User, error) {
 	var (
 		err      error
 		password string
@@ -234,7 +230,7 @@ func (ur *UserRepository) FindByUserName(ctx context.Context, username string) (
 		From(usersTableName).
 		Where(sq.Eq{"username": username}).
 		ToSql()
-	stmt, err := ur.db.PrepareContext(ctx, query)
+	stmt, err := r.db.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

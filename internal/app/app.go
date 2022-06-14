@@ -51,12 +51,9 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 	engine := gin.Default()
 	repos := repository.NewRepository(db)
-	services := service.NewService(repos)
+	services := service.NewService(db, repos)
 
 	application := &App{
 		ctx:     ctx,

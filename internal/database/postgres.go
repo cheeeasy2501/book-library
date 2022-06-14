@@ -36,6 +36,7 @@ func (db *Database) OpenConnection() error {
 		return err
 	}
 
+	db.Conn = connection
 	return nil
 }
 
