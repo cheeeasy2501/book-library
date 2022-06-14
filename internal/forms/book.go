@@ -30,7 +30,7 @@ func NewGetBooksForm() *GetBooksForm {
 }
 
 type GetBookForm struct {
-	Id uint64 `uri:"id" binding:"required,qte=1"`
+	Id uint64 `uri:"id" binding:"required,gte=1"`
 	relationships.Relations
 }
 
