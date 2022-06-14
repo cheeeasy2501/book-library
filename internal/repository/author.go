@@ -24,7 +24,7 @@ type AuthorRepoInterface interface {
 	Delete(ctx context.Context, id uint64) error
 
 	GetAuthorsByBookId(ctx context.Context, id uint64) (model.Authors, error)
-	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) (model.Authors, error)
+	GetAuthorsByBooksIds(ctx context.Context, ids []uint64) ([]model.AuthorRelation, error)
 	AttachByAuthorIds(ctx context.Context, bookId uint64, authorIds []uint64) error
 }
 
@@ -75,11 +75,11 @@ func (r *Author) GetAuthorsByBookId(ctx context.Context, bookId uint64) (model.A
 	return authors, nil
 }
 
-func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (model.Authors, error) {
-	var authors model.Authors
+func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) ([]model.AuthorRelation, error) {
+	var authors []model.AuthorRelation
 
 	query, args, err := builder.Select(
-		`authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at`).
+		`author_books.book_id, authors.id, authors.firstname, authors.lastname, authors.created_at, authors.updated_at`).
 		From(authorBooksTableName).
 		LeftJoin("authors on authors.id = author_books.author_id").
 		Where(sq.Eq{"author_books.book_id": bookIds}).
@@ -95,8 +95,9 @@ func (r *Author) GetAuthorsByBooksIds(ctx context.Context, bookIds []uint64) (mo
 	}
 
 	for rows.Next() {
-		author := model.Author{}
+		author := model.AuthorRelation{}
 		err = rows.Scan(
+			&author.BookId,
 			&author.Id,
 			&author.FirstName,
 			&author.LastName,

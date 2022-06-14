@@ -16,7 +16,7 @@ type BookServiceInterface interface {
 	Update(ctx context.Context, book *model.Book) error
 	Delete(ctx context.Context, bookId uint64) error
 
-	GetAllWithRelations(ctx context.Context, paginator forms.Pagination) ([]model.FullBook, error)
+	GetAllWithRelations(ctx context.Context, paginator forms.Pagination) ([]*model.FullBook, error)
 	GetByIdWithRelations(ctx context.Context, bookId uint64) (model.FullBook, error)
 	CreateWithRelations(ctx context.Context, createBook model.CreateBook) (*model.FullBook, error)
 }
@@ -86,12 +86,11 @@ func (s *BookService) Delete(ctx context.Context, bookId uint64) error {
 	return nil
 }
 
-func (s *BookService) GetAllWithRelations(ctx context.Context, paginator forms.Pagination) ([]model.FullBook, error) {
+func (s *BookService) GetAllWithRelations(ctx context.Context, paginator forms.Pagination) ([]*model.FullBook, error) {
 	var (
 		err       error
 		books     []model.Book
-		fullBooks []model.FullBook
-		authors   model.Authors
+		fullBooks []*model.FullBook
 	)
 
 	books, err = s.bookRepository.GetPage(ctx, paginator.Offset, paginator.Limit)
@@ -103,18 +102,29 @@ func (s *BookService) GetAllWithRelations(ctx context.Context, paginator forms.P
 	bookIds := make([]uint64, len(books))
 	for _, book := range books {
 		bookIds = append(bookIds, book.Id)
-		mapBooks[book.Id] = &model.FullBook{
+		fullBook := model.FullBook{
 			Book: book,
 		}
+		mapBooks[book.Id] = &fullBook
+		fullBooks = append(fullBooks, &fullBook)
 	}
 
-	authors, err = s.authorRepository.GetAuthorsByBooksIds(ctx, bookIds)
+	authorsAgg, err := s.authorRepository.GetAuthorsByBooksIds(ctx, bookIds)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, author := range authors {
-		book := mapBooks[author.Id]
+	for _, agg := range authorsAgg {
+		book := mapBooks[agg.BookId]
+		author := model.Author{
+			Id:        agg.Id,
+			FirstName: agg.FirstName,
+			LastName:  agg.LastName,
+			Timestamp: model.Timestamp{
+				CreatedAt: agg.CreatedAt,
+				UpdatedAt: agg.UpdatedAt,
+			},
+		}
 		book.Authors = append(book.Authors, author)
 	}
 
