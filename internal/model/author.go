@@ -19,13 +19,13 @@ type AuthorRelation struct {
 
 type FullAuthor struct {
 	Author
-	Books Books `json:"books,omitempty"`
+	Books FullBooks `json:"books,omitempty"`
 }
 
-type Books []FullBook
+type FullBooks []FullBook
 
 // impliment sql.Scanner
-func (ab *Books) Scan(src interface{}) error {
+func (ab *FullBooks) Scan(src interface{}) error {
 	bts, ok := src.([]byte)
 	if !ok {
 		return errors.New("Error Scanning Array")

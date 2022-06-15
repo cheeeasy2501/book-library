@@ -118,6 +118,11 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 		code    int
 		message string
 	)
+	val, ok := err.(apperrors.AppError)
+	if ok {
+		err = val.HTTPError
+		a.logger.Error(val.InternalError)
+	}
 
 	switch value := err.(type) {
 	case apperrors.ValidateError:
@@ -129,6 +134,7 @@ func (a *App) SendError(ctx *gin.Context, err error) {
 	default:
 		code, message = http.StatusBadRequest, value.Error()
 	}
+	a.logger.Error(err.Error())
 
 	ctx.JSON(code, HTTPError{Message: message})
 	ctx.Abort()

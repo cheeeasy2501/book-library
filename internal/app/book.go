@@ -25,13 +25,15 @@ func (a *App) GetBooks(ctx *gin.Context) {
 
 	switch ok {
 	case true:
-		book, err := a.service.Book.GetAllWithRelations(ctx, form.Pagination)
+		books := []*model.FullBook{}
+		books, err = a.service.Book.GetAllWithRelations(ctx, form.Pagination)
 		if err != nil {
 			return
 		}
-		a.SendResponse(ctx, book)
+		a.SendResponse(ctx, books)
 	default:
-		books, err := a.service.Book.GetAll(ctx, form.Pagination)
+		books := []model.Book{}
+		books, err = a.service.Book.GetAll(ctx, form.Pagination)
 		if err != nil {
 			return
 		}
@@ -57,13 +59,15 @@ func (a *App) GetBook(ctx *gin.Context) {
 
 	switch ok {
 	case true:
-		book, err := a.service.Book.GetByIdWithRelations(ctx, form.Id)
+		book := &model.FullBook{}
+		book, err = a.service.Book.GetByIdWithRelations(ctx, form.Id)
 		if err != nil {
 			return
 		}
 		a.SendResponse(ctx, book)
 	default:
-		book, err := a.service.Book.GetById(ctx, form.Id)
+		book := model.Book{}
+		book, err = a.service.Book.GetById(ctx, form.Id)
 		if err != nil {
 			return
 		}

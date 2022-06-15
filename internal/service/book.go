@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/database"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
@@ -17,7 +19,7 @@ type BookServiceInterface interface {
 	Delete(ctx context.Context, bookId uint64) error
 
 	GetAllWithRelations(ctx context.Context, paginator forms.Pagination) ([]*model.FullBook, error)
-	GetByIdWithRelations(ctx context.Context, bookId uint64) (model.FullBook, error)
+	GetByIdWithRelations(ctx context.Context, bookId uint64) (*model.FullBook, error)
 	CreateWithRelations(ctx context.Context, createBook model.CreateBook) (*model.FullBook, error)
 }
 
@@ -94,6 +96,9 @@ func (s *BookService) GetAllWithRelations(ctx context.Context, paginator forms.P
 	)
 
 	books, err = s.bookRepository.GetPage(ctx, paginator.Offset, paginator.Limit)
+	if err == sql.ErrNoRows {
+		return nil, apperrors.NewAppError(err, apperrors.BookNotFound)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -131,18 +136,27 @@ func (s *BookService) GetAllWithRelations(ctx context.Context, paginator forms.P
 	return fullBooks, nil
 }
 
-func (s *BookService) GetByIdWithRelations(ctx context.Context, bookId uint64) (model.FullBook, error) {
+func (s *BookService) GetByIdWithRelations(ctx context.Context, bookId uint64) (*model.FullBook, error) {
 	var (
-		err      error
-		fullBook model.FullBook
+		err error
 	)
+	fullBook := &model.FullBook{}
 
 	book, err := s.bookRepository.GetById(ctx, bookId)
+	if err == sql.ErrNoRows {
+		return nil, apperrors.BookNotFound
+	}
 	if err != nil {
-		return fullBook, err
+		return nil, err
+	}
+
+	authors, err := s.authorRepository.GetAuthorsByBookId(ctx, bookId)
+	if err != nil {
+		return nil, err
 	}
 	fullBook.Book = book
-	// implement relations
+	fullBook.Authors = authors
+
 	return fullBook, nil
 }
 

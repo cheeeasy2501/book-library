@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
 	"github.com/cheeeasy2501/book-library/internal/database"
@@ -47,6 +48,9 @@ func (r *BookRepository) GetPage(ctx context.Context, offset, limit uint64) ([]m
 	}
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err == sql.ErrNoRows {
+		return nil, apperrors.NewAppError(apperrors.BooksNotFound, err)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +106,9 @@ func (r *BookRepository) GetById(ctx context.Context, id uint64) (model.Book, er
 			&book.CreatedAt,
 			&book.UpdatedAt,
 		)
+	if err == sql.ErrNoRows {
+		return book, apperrors.NewAppError(apperrors.BookNotFound, err)
+	}
 	if err != nil {
 		return book, err
 	}
