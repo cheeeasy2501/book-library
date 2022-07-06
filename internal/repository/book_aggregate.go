@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/forms"
 	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/tsenart/nap"
@@ -65,8 +64,8 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 	var (
 		err error
 	)
-	build := builder.NewBookBuilder(ctx, relations)
-	book, err := build.WithAuthors().Execute(bar.db)
+	//build := builder.NewBookBuilder(ctx, relations)
+	//book, err := build.WithAuthors().Execute(bar.db)
 	if err != nil {
 		return nil, err
 	}
@@ -75,5 +74,6 @@ func (bar *BookAggregateRepository) GetById(ctx context.Context, id uint64, rela
 		return nil, err
 	}
 
-	return book, nil
+	return nil, nil
+	//return book, nil
 }

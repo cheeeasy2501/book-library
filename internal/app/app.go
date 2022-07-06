@@ -3,8 +3,10 @@ package app
 import (
 	"context"
 	"github.com/cheeeasy2501/book-library/internal/app/apperrors"
+	"github.com/cheeeasy2501/book-library/internal/builder"
 	"github.com/cheeeasy2501/book-library/internal/config"
 	"github.com/cheeeasy2501/book-library/internal/database"
+	"github.com/cheeeasy2501/book-library/internal/model"
 	"github.com/cheeeasy2501/book-library/internal/repository"
 	"github.com/cheeeasy2501/book-library/internal/service"
 	"github.com/gin-gonic/gin"
@@ -44,6 +46,12 @@ func NewApp(ctx context.Context, cnf *config.Config, logger *logrus.Logger) (*Ap
 
 	routes := engine.Group("api/v1/")
 	{
+		routes.GET("/test", func(c *gin.Context) {
+			m := &model.BookAggregate{}
+			bld := builder.NewBookBuilder(ctx, m)
+			err = bld.WithAuthors().Execute(connection)
+			application.SendResponse(c, bld.Model)
+		})
 		routes.POST("signIn", application.SignInHandler)
 		routes.POST("signUp", application.SignUpHandler)
 		books := routes.Group("books", application.ValidateTokenMiddleware)
